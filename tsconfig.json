@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "module": "CommonJS",          // 👈 ESSENCIAL
+    "target": "ES2020",
+    "typeRoots": ["./node_modules/@types", "./src/@types",],
+
+    "moduleResolution": "Node",
+    "rootDir": "src",
+    "outDir": "dist",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "strict": true,
+    "sourceMap": true
+  },
+  "include": ["src"]
+}

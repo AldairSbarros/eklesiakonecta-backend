@@ -1,0 +1,1054 @@
+﻿===========================================================
+📁 ekklesia-frontend/
+Frontend completo do sistema Ekklesia (React + Vite + TS + SCSS)
+===========================================================
+
+
+📁 public/
+└── logo-cruzdigital.png  → Coloque sua imagem aqui.
+
+
+===========================================================
+📁 src/styles/variables.scss
+===========================================================
+$azul-celestial: #003366;
+$dourado: #FFD700;
+$bronze: #5C4033;
+$branco: #ffffff;
+$cinza: #B0B0B0;
+$fonte-principal: 'Segoe UI', sans-serif;
+
+
+===========================================================
+📁 src/styles/global.scss
+===========================================================
+@import './variables.scss';
+
+
+body {
+  margin: 0;
+  font-family: $fonte-principal;
+  background-color: $azul-celestial;
+  color: $branco;
+}
+
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+
+button {
+  cursor: pointer;
+}
+
+
+===========================================================
+📁 src/main.tsx
+===========================================================
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import './styles/global.scss';
+
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+
+
+===========================================================
+📁 src/App.tsx
+===========================================================
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Login from './pages/Login';
+import { AuthProvider } from './contexts/AuthContext';
+import PrivateRoute from './routes/PrivateRoute';
+import PainelPresidente from './pages/PainelPresidente';
+import PainelTesouraria from './pages/PainelTesouraria';
+import PainelLocal from './pages/PainelLocal';
+
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route element={<PrivateRoute />}>
+            <Route path="/painel/presidente" element={<PainelPresidente />} />
+            <Route path="/painel/tesouraria" element={<PainelTesouraria />} />
+            <Route path="/painel/local" element={<PainelLocal />} />
+          </Route>
+        </Routes>
+      </AuthProvider>
+    </BrowserRouter>
+  );
+}
+
+
+===========================================================
+📁 src/contexts/AuthContext.tsx
+===========================================================
+import { createContext, useContext, ReactNode } from 'react';
+
+
+interface AuthContextType {
+  token: string | null;
+  perfil: string | null;
+}
+
+
+const AuthContext = createContext<AuthContextType>({
+  token: localStorage.getItem('token'),
+  perfil: localStorage.getItem('perfil')
+});
+
+
+export function useAuth() {
+  return useContext(AuthContext);
+}
+
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const token = localStorage.getItem('token');
+  const perfil = localStorage.getItem('perfil');
+
+
+  return (
+    <AuthContext.Provider value={{ token, perfil }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+
+===========================================================
+📁 src/services/api.ts
+===========================================================
+import axios from 'axios';
+
+
+export const api = axios.create({
+  baseURL: 'http://localhost:3333',
+  headers: {
+    Authorization: `Bearer ${localStorage.getItem('token')}`
+  }
+});
+
+
+===========================================================
+📁 src/routes/PrivateRoute.tsx
+===========================================================
+import { Navigate, Outlet } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+
+
+export default function PrivateRoute() {
+  const { token } = useAuth();
+  return token ? <Outlet /> : <Navigate to="/" />;
+}
+
+
+===========================================================
+📁 src/pages/Login.tsx
+===========================================================
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { api } from '../services/api';
+import './login.scss';
+import { FaUser, FaLock } from 'react-icons/fa';
+
+
+export default function Login() {
+  const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
+  const [erro, setErro] = useState('');
+  const navigate = useNavigate();
+
+
+  const logar = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErro('');
+    try {
+      const res = await api.post('/usuario/login', { email, senha });
+      const token = res.data.token;
+      const payload = JSON.parse(atob(token.split('.')[1]));
+
+
+      localStorage.setItem('token', token);
+      localStorage.setItem('perfil', payload.perfil);
+
+
+      if (payload.perfil === 'presidente') navigate('/painel/presidente');
+      else if (payload.perfil === 'local') navigate('/painel/local');
+      else if (payload.perfil === 'tesoureiro') navigate('/painel/tesouraria');
+      else navigate('/');
+    } catch {
+      setErro('Login inválido. Verifique os dados.');
+    }
+  };
+
+
+  return (
+    <div className="login-page">
+      <div className="login-card">
+        <img src="/logo-cruzdigital.png" alt="Logo Ekklesia" className="logo" />
+        <h2>Entrar no sistema</h2>
+        <form onSubmit={logar}>
+          <div className="input-group">
+            <FaUser />
+            <input type="email" placeholder="E-mail" value={email} onChange={e => setEmail(e.target.value)} />
+          </div>
+          <div className="input-group">
+            <FaLock />
+            <input type="password" placeholder="Senha" value={senha} onChange={e => setSenha(e.target.value)} />
+          </div>
+          {erro && <p className="erro">{erro}</p>}
+          <button type="submit">Acessar</button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+
+===========================================================
+📁 src/pages/login.scss
+===========================================================
+@import '../styles/variables.scss';
+
+
+.login-page {
+  background-color: $azul-celestial;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.login-card {
+  background-color: $branco;
+  border-radius: 8px;
+  padding: 3rem 2rem;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+
+
+  h2 {
+    font-family: $fonte-principal;
+    color: $bronze;
+    margin-bottom: 1.5rem;
+  }
+
+
+  .logo {
+    height: 90px;
+    margin-bottom: 1rem;
+  }
+
+
+  .input-group {
+    background: $cinza;
+    display: flex;
+    align-items: center;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+
+
+    svg {
+      margin-right: 0.5rem;
+      color: $azul-celestial;
+    }
+
+
+    input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      outline: none;
+      font-size: 1rem;
+    }
+  }
+
+
+  button {
+    background-color: $dourado;
+    color: $azul-celestial;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 0.5rem;
+    transition: background 0.3s;
+
+
+    &:hover {
+      background-color: darken($dourado, 10%);
+    }
+  }
+
+
+  .erro {
+    color: red;
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
+  }
+}
+
+
+===========================================================
+📁 CONTINUA...
+===========================================================
+
+
+===========================================================
+📁 src/pages/PainelPresidente.tsx
+===========================================================
+import './painel.scss';
+import { FaUsers, FaFileInvoiceDollar, FaBroadcastTower, FaBible, FaChartBar } from 'react-icons/fa';
+import Header from '../components/Header';
+
+
+export default function PainelPresidente() {
+  return (
+    <div className="painel">
+      <Header />
+      <h1>Painel do Pastor Presidente</h1>
+      <div className="grid">
+        <button className="card"><FaUsers /> Novos Convertidos</button>
+        <button className="card"><FaBroadcastTower /> Células</button>
+        <button className="card"><FaChartBar /> Relatórios</button>
+        <button className="card"><FaBible /> Mensagens</button>
+        <button className="card"><FaFileInvoiceDollar /> Tesouraria</button>
+      </div>
+    </div>
+  );
+}
+
+
+===========================================================
+📁 src/pages/PainelTesouraria.tsx
+===========================================================
+import './painel.scss';
+import { FaMoneyBillWave, FaFileInvoice, FaDownload, FaWhatsapp } from 'react-icons/fa';
+import Header from '../components/Header';
+
+
+export default function PainelTesouraria() {
+  return (
+    <div className="painel">
+      <Header />
+      <h1>Painel da Tesouraria</h1>
+      <div className="grid">
+        <button className="card"><FaMoneyBillWave /> Registrar Dízimo</button>
+        <button className="card"><FaFileInvoice /> Emitir Recibo</button>
+        <button className="card"><FaDownload /> Relatórios Mensais</button>
+        <button className="card"><FaWhatsapp /> Enviar via WhatsApp</button>
+      </div>
+    </div>
+  );
+}
+
+
+===========================================================
+📁 src/pages/PainelLocal.tsx
+===========================================================
+import './painel.scss';
+import { FaUserPlus, FaUsers, FaClock, FaClipboardList } from 'react-icons/fa';
+import Header from '../components/Header';
+
+
+export default function PainelLocal() {
+  return (
+    <div className="painel">
+      <Header />
+      <h1>Painel do Dirigente</h1>
+      <div className="grid">
+        <button className="card"><FaUserPlus /> Cadastrar Convertido</button>
+        <button className="card"><FaUsers /> Presenças</button>
+        <button className="card"><FaClock /> Agenda</button>
+        <button className="card"><FaClipboardList /> Mensagens</button>
+      </div>
+    </div>
+  );
+}
+
+
+===========================================================
+📁 src/pages/painel.scss
+===========================================================
+@import '../styles/variables.scss';
+
+
+.painel {
+  background: $azul-celestial;
+  color: $branco;
+  min-height: 100vh;
+  padding: 2rem;
+
+
+  h1 {
+    margin-bottom: 2rem;
+    text-align: center;
+    color: $dourado;
+  }
+
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1.5rem;
+    justify-content: center;
+  }
+
+
+  .card {
+    background: $branco;
+    color: $azul-celestial;
+    border-radius: 12px;
+    padding: 2rem 1rem;
+    font-size: 1.1rem;
+    font-weight: bold;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    transition: all 0.3s ease;
+    cursor: pointer;
+
+
+    svg {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+
+    &:hover {
+      background: $dourado;
+      color: $azul-celestial;
+    }
+  }
+}
+
+
+===========================================================
+📁 src/components/Header.tsx
+===========================================================
+import './header.scss';
+import { useNavigate } from 'react-router-dom';
+
+
+export default function Header() {
+  const navigate = useNavigate();
+  const sair = () => {
+    localStorage.clear();
+    navigate('/');
+  };
+
+
+  return (
+    <header className="header">
+      <img src="/logo-cruzdigital.png" alt="Ekklesia" />
+      <button onClick={sair}>Sair</button>
+    </header>
+  );
+}
+
+
+===========================================================
+📁 src/components/header.scss
+===========================================================
+@import '../styles/variables.scss';
+
+
+.header {
+  background: $azul-celestial;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+
+  img {
+    height: 50px;
+  }
+
+
+  button {
+    background: none;
+    color: $dourado;
+    border: 2px solid $dourado;
+    padding: 0.4rem 1rem;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+
+
+    &:hover {
+      background: $dourado;
+      color: $azul-celestial;
+    }
+  }
+}
+
+
+===========================================================
+📁 CONTINUA...
+===========================================================
+
+
+===========================================================
+📁 src/pages/RegistrarDizimo.tsx
+===========================================================
+import { useState } from 'react';
+import './registrado.scss';
+import { api } from '../services/api';
+import Header from '../components/Header';
+
+
+export default function RegistrarDizimo() {
+  const [valor, setValor] = useState('');
+  const [usuarioId, setUsuarioId] = useState('');
+  const [congregacaoId, setCongregacaoId] = useState('');
+  const [comprovante, setComprovante] = useState<File | null>(null);
+  const [mensagem, setMensagem] = useState('');
+
+
+  const enviar = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!comprovante) return setMensagem('Comprovante é obrigatório.');
+
+
+    const form = new FormData();
+    form.append('valor', valor);
+    form.append('usuarioId', usuarioId);
+    form.append('congregacaoId', congregacaoId);
+    form.append('comprovante', comprovante);
+
+
+    try {
+      await api.post('/dizimo', form);
+      setMensagem('Dízimo registrado com sucesso!');
+    } catch {
+      setMensagem('Erro ao registrar.');
+    }
+  };
+
+
+  return (
+    <div className="registrar">
+      <Header />
+      <h2>Registrar Dízimo</h2>
+      <form onSubmit={enviar}>
+        <input type="number" placeholder="Valor (R$)" value={valor} onChange={e => setValor(e.target.value)} />
+        <input type="number" placeholder="ID do Membro" value={usuarioId} onChange={e => setUsuarioId(e.target.value)} />
+        <input type="number" placeholder="ID da Congregação" value={congregacaoId} onChange={e => setCongregacaoId(e.target.value)} />
+        <input type="file" onChange={e => setComprovante(e.target.files?.[0] || null)} />
+        <button type="submit">Registrar</button>
+        {mensagem && <p>{mensagem}</p>}
+      </form>
+    </div>
+  );
+}
+
+
+===========================================================
+📁 src/pages/registrado.scss
+===========================================================
+@import '../styles/variables.scss';
+
+
+.registrar {
+  padding: 2rem;
+  background-color: $azul-celestial;
+  min-height: 100vh;
+  color: $branco;
+
+
+  h2 {
+    margin-bottom: 1rem;
+    color: $dourado;
+  }
+
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+
+    input[type='file'] {
+      border: none;
+      background: $branco;
+      color: $azul-celestial;
+      padding: 0.5rem;
+      border-radius: 6px;
+    }
+
+
+    input, button {
+      padding: 0.75rem;
+      border-radius: 6px;
+      border: none;
+      font-size: 1rem;
+    }
+
+
+    button {
+      background-color: $dourado;
+      color: $azul-celestial;
+      font-weight: bold;
+
+
+      &:hover {
+        background-color: darken($dourado, 10%);
+      }
+    }
+
+
+    p {
+      margin-top: 1rem;
+      color: $branco;
+      font-weight: bold;
+    }
+  }
+}
+
+
+===========================================================
+📁 src/pages/NovoConvertido.tsx
+===========================================================
+import { useState } from 'react';
+import './convertido.scss';
+import { api } from '../services/api';
+import Header from '../components/Header';
+
+
+export default function NovoConvertido() {
+  const [nome, setNome] = useState('');
+  const [celulaId, setCelulaId] = useState('');
+  const [mensagem, setMensagem] = useState('');
+
+
+  const salvar = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await api.post('/convertido', {
+        nome,
+        dataDecisao: new Date().toISOString(),
+        localDecisao: 'Culto',
+        status: 'em_discipulado',
+        celulaId: celulaId ? parseInt(celulaId) : null
+      });
+
+
+      await api.post('/notificacoes', {
+        tipo: 'whatsapp',
+        destinatario: '+5592999990000',
+        mensagem: `Novo convertido: ${nome}`,
+        dataEnvio: new Date()
+      });
+
+
+      setMensagem('Convertido salvo e notificação enviada!');
+    } catch {
+      setMensagem('Erro ao cadastrar convertido.');
+    }
+  };
+
+
+  return (
+    <div className="convertido">
+      <Header />
+      <h2>Novo Convertido</h2>
+      <form onSubmit={salvar}>
+        <input placeholder="Nome" value={nome} onChange={e => setNome(e.target.value)} />
+        <input placeholder="ID da Célula" value={celulaId} onChange={e => setCelulaId(e.target.value)} />
+        <button type="submit">Salvar</button>
+        {mensagem && <p>{mensagem}</p>}
+      </form>
+    </div>
+  );
+}
+
+
+===========================================================
+📁 src/pages/convertido.scss
+===========================================================
+@import '../styles/variables.scss';
+
+
+.convertido {
+  padding: 2rem;
+  background-color: $azul-celestial;
+  min-height: 100vh;
+  color: $branco;
+
+
+  h2 {
+    margin-bottom: 1rem;
+    color: $dourado;
+  }
+
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+
+    input, button {
+      padding: 0.75rem;
+      border-radius: 6px;
+      border: none;
+      font-size: 1rem;
+    }
+
+
+    button {
+      background-color: $dourado;
+      color: $azul-celestial;
+      font-weight: bold;
+
+
+      &:hover {
+        background-color: darken($dourado, 10%);
+      }
+    }
+
+
+    p {
+      margin-top: 1rem;
+      color: $branco;
+      font-weight: bold;
+    }
+  }
+}
+
+
+===========================================================
+📁 CONTINUA...
+===========================================================
+
+
+===========================================================
+📁 src/pages/EnviarMensagem.tsx
+===========================================================
+import { useState } from 'react';
+import { api } from '../services/api';
+import Header from '../components/Header';
+
+
+export default function EnviarMensagem() {
+  const [mensagem, setMensagem] = useState('');
+  const [numero, setNumero] = useState('');
+  const [retorno, setRetorno] = useState('');
+
+
+  const enviar = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await api.post('/notificacoes', {
+        tipo: 'whatsapp',
+        destinatario: numero,
+        mensagem,
+        dataEnvio: new Date()
+      });
+      setRetorno('Mensagem agendada com sucesso!');
+    } catch {
+      setRetorno('Erro ao enviar.');
+    }
+  };
+
+
+  return (
+    <div style={{ padding: '2rem' }}>
+      <Header />
+      <h2>Enviar WhatsApp</h2>
+      <form onSubmit={enviar}>
+        <input placeholder="Número (+55...)" value={numero} onChange={e => setNumero(e.target.value)} />
+        <textarea placeholder="Mensagem" value={mensagem} onChange={e => setMensagem(e.target.value)} />
+        <button type="submit">Enviar</button>
+        {retorno && <p>{retorno}</p>}
+      </form>
+    </div>
+  );
+}
+
+
+===========================================================
+📁 src/pages/Recibo.tsx
+===========================================================
+export default function Recibo({ nome, valor, data }: { nome: string; valor: number; data: string }) {
+  return (
+    <div style={{ padding: '2rem', fontFamily: 'serif', border: '1px solid gray', maxWidth: 500 }}>
+      <h3 style={{ textAlign: 'center' }}>Recibo de Dízimo</h3>
+      <p><strong>Nome:</strong> {nome}</p>
+      <p><strong>Valor:</strong> R$ {valor.toFixed(2)}</p>
+      <p><strong>Data:</strong> {new Date(data).toLocaleDateString()}</p>
+      <p style={{ marginTop: '2rem' }}>Assinatura Tesouraria</p>
+    </div>
+  );
+}
+
+
+===========================================================
+📁 src/pages/RelatorioMensal.tsx
+===========================================================
+import { useEffect, useState } from 'react';
+import { api } from '../services/api';
+import GraficoDizimos from '../components/GraficoDizimos';
+import Header from '../components/Header';
+
+
+export default function RelatorioMensal() {
+  const [dados, setDados] = useState<any>(null);
+
+
+  useEffect(() => {
+    api.get('/relatorios/mensal?mes=06&ano=2025&congregacaoId=1')
+      .then(res => setDados(res.data))
+      .catch(() => setDados(null));
+  }, []);
+
+
+  const valores = [1000, 1300, 1100, 1500, 1400];
+  const labels = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai'];
+
+
+  return (
+    <div style={{ padding: '2rem' }}>
+      <Header />
+      <h2>Relatório Financeiro</h2>
+      {dados ? (
+        <>
+          <ul>
+            <li><strong>Total:</strong> R$ {dados.totalDizimos}</li>
+            <li><strong>Lançamentos:</strong> {dados.quantidadeLancamentos}</li>
+            <li><strong>Média:</strong> R$ {dados.valorMedio}</li>
+          </ul>
+          <GraficoDizimos valores={valores} labels={labels} />
+        </>
+      ) : (
+        <p>Carregando ou erro ao carregar dados.</p>
+      )}
+    </div>
+  );
+}
+
+
+===========================================================
+📁 src/components/GraficoDizimos.tsx
+===========================================================
+import { Bar } from 'react-chartjs-2';
+import { Chart, BarElement, CategoryScale, LinearScale } from 'chart.js';
+Chart.register(BarElement, CategoryScale, LinearScale);
+
+
+interface Props {
+  valores: number[];
+  labels: string[];
+}
+
+
+export default function GraficoDizimos({ valores, labels }: Props) {
+  return (
+    <Bar
+      data={{
+        labels,
+        datasets: [
+          {
+            label: 'Dízimos',
+            data: valores,
+            backgroundColor: '#FFD700'
+          }
+        ]
+      }}
+      options={{ responsive: true }}
+    />
+  );
+}
+
+
+===========================================================
+📁 package.json
+===========================================================
+{
+  "name": "ekklesia-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "chart.js": "^4.4.0",
+    "react": "^18.2.0",
+    "react-chartjs-2": "^5.2.0",
+    "react-dom": "^18.2.0",
+    "react-icons": "^4.10.1",
+    "react-router-dom": "^6.14.2"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.15",
+    "@types/react-dom": "^18.2.7",
+    "@vitejs/plugin-react": "^4.2.1",
+    "sass": "^1.70.0",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.10"
+  }
+}
+
+
+===========================================================
+📁 vite.config.ts
+===========================================================
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+
+export default defineConfig({
+  plugins: [react()]
+});
+
+
+===========================================================
+📄 README.md (Frontend)
+===========================================================
+# 🎨 Ekklesia Frontend
+
+
+Frontend oficial do sistema Ekklesia: gerenciamento de igrejas, células, tesouraria e evangelismo conectado ao backend completo.
+
+
+---
+
+
+## 🚀 Como rodar o projeto
+
+
+```bash
+# Clonar o projeto
+git clone https://github.com/seu-user/ekklesia-frontend.git
+cd ekklesia-frontend
+
+
+# Instalar dependências
+npm install
+
+
+# Iniciar em desenvolvimento
+npm run dev
+
+
+src/
+├── assets/             # Imagens e ícones
+├── components/         # Botões, Header, Sidebar, Cards
+├── contexts/           # AuthContext
+├── pages/              # Login, Painéis, Telas operacionais
+├── routes/             # PrivateRoute
+├── services/           # API com Axios
+├── styles/             # SCSS global e variáveis
+├── App.tsx
+└── main.tsx
+
+
+
+
+📁 ekklesia-backend/
+├── 📁 src/
+│   ├── 📁 controllers/         → Lógica de cada módulo (usuarios, dizimos, celulas, etc.)
+│   │   ├── usuario.controller.ts
+│   │   ├── congregacao.controller.ts
+│   │   ├── dizimo.controller.ts
+│   │   ├── celula.controller.ts
+│   │   ├── reuniao.controller.ts
+│   │   ├── convertido.controller.ts
+│   │   ├── mensagem.controller.ts
+│   │   ├── relatorio.controller.ts
+│   │   ├── log.controller.ts
+│   │   └── notificacao.controller.ts
+│
+│   ├── 📁 routes/              → Rotas Express por entidade
+│   │   ├── usuario.routes.ts
+│   │   ├── congregacao.routes.ts
+│   │   ├── dizimo.routes.ts
+│   │   ├── celula.routes.ts
+│   │   ├── reuniao.routes.ts
+│   │   ├── convertido.routes.ts
+│   │   ├── mensagem.routes.ts
+│   │   ├── relatorio.routes.ts
+│   │   ├── log.routes.ts
+│   │   └── notificacao.routes.ts
+│
+│   ├── 📁 middlewares/         → Autenticação, logs, validações
+│   │   └── autorizaJWT.ts
+│
+│   ├── 📁 utils/               → Utilidades genéricas
+│   │   └── jwt.ts
+│
+│   ├── 📁
+
+
+
+
+
+
+📁 ekklesia-backend/
+├── 📁 src/
+│   ├── 📁 controllers/         → Lógica de cada módulo (usuarios, dizimos, celulas, etc.)
+│   │   ├── usuario.controller.ts
+│   │   ├── congregacao.controller.ts
+│   │   ├── dizimo.controller.ts
+│   │   ├── celula.controller.ts
+│   │   ├── reuniao.controller.ts
+│   │   ├── convertido.controller.ts
+│   │   ├── mensagem.controller.ts
+│   │   ├── relatorio.controller.ts
+│   │   ├── log.controller.ts
+│   │   └── notificacao.controller.ts
+│
+│   ├── 📁 routes/              → Rotas Express por entidade
+│   │   ├── usuario.routes.ts
+│   │   ├── congregacao.routes.ts
+│   │   ├── dizimo.routes.ts
+│   │   ├── celula.routes.ts
+│   │   ├── reuniao.routes.ts
+│   │   ├── convertido.routes.ts
+│   │   ├── mensagem.routes.ts
+│   │   ├── relatorio.routes.ts
+│   │   ├── log.routes.ts
+│   │   └── notificacao.routes.ts
+│
+│   ├── 📁 middlewares/         → Autenticação, logs, validações
+│   │   └── autorizaJWT.ts
+│
+│   ├── 📁 utils/               → Utilidades genéricas
+│   │   └── jwt.ts
+│
+│   ├── 📁 jobs/                → Robôs e agendadores
+│   │   └── whatsappBot.ts
+│
+│   └── index.ts               → Entrada principal do servidor
+│
+├── 📁 prisma/
+│   └── schema.prisma          → Modelos do banco com Prisma
+│
+├── 📁 uploads/                → Comprovantes de dízimo
+├── 📁 recibos/                → PDFs gerados
+├── .env                       → Variáveis de ambiente
+├── .env.example               → Exemplo de config
+├── tsconfig.json              → Configuração do TypeScript
+├── package.json               → Scripts e dependências
+└── README.md                  → Documentação geral do backend

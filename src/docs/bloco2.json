@@ -1,0 +1,244 @@
+/* =====================================================
+🔹 CONTINUAÇÃO — ARQUIVOS DO EKKLESIA BACKEND (TYPESCRIPT)
+===================================================== */
+
+/* ========== src/controllers/celula.controller.ts ========== */
+import { Request, Response } from 'express';
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
+
+export const criarCelula = async (req: Request, res: Response) => {
+  const { nome, tipo, lider, anfitriao, supervisao, congregacaoId } = req.body;
+  const nova = await prisma.celula.create({
+    data: {
+      nome, tipo, lider, anfitriao, supervisao,
+      congregacaoId: Number(congregacaoId)
+    }
+  });
+  res.status(201).json(nova);
+};
+
+export const listarCelulas = async (_: Request, res: Response) => {
+  const lista = await prisma.celula.findMany({ include: { reunioes: true } });
+  res.json(lista);
+};
+
+export const buscarCelulaPorId = async (req: Request, res: Response) => {
+  const celula = await prisma.celula.findUnique({
+    where: { id: Number(req.params.id) },
+    include: { reunioes: true }
+  });
+  if (!celula) return res.status(404).json({ erro: 'Célula não encontrada.' });
+  res.json(celula);
+};
+
+export const atualizarCelula = async (req: Request, res: Response) => {
+  const atualizada = await prisma.celula.update({
+    where: { id: Number(req.params.id) },
+    data: req.body
+  });
+  res.json(atualizada);
+};
+
+export const deletarCelula = async (req: Request, res: Response) => {
+  await prisma.celula.delete({ where: { id: Number(req.params.id) } });
+  res.status(204).send();
+};
+
+/* ========== src/controllers/reuniao.controller.ts ========== */
+import { Request, Response } from 'express';
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
+
+export const criarReuniao = async (req: Request, res: Response) => {
+  const { data, tema, presencas, visitantes, celulaId } = req.body;
+  const nova = await prisma.reuniao.create({
+    data: {
+      data: new Date(data),
+      tema,
+      presencas: Number(presencas),
+      visitantes: Number(visitantes),
+      celulaId: Number(celulaId)
+    }
+  });
+  res.status(201).json(nova);
+};
+
+export const listarReunioes = async (_: Request, res: Response) => {
+  const lista = await prisma.reuniao.findMany({ include: { celula: true } });
+  res.json(lista);
+};
+
+/* ========== src/controllers/convertido.controller.ts ========== */
+import { Request, Response } from 'express';
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
+
+export const cadastrarConvertido = async (req: Request, res: Response) => {
+  const {
+    nome, dataDecisao, localDecisao, status,
+    discipulador, celular, observacoes, celulaId
+  } = req.body;
+
+  const novo = await prisma.novoConvertido.create({
+    data: {
+      nome,
+      dataDecisao: new Date(dataDecisao),
+      localDecisao,
+      status,
+      discipulador,
+      celular,
+      observacoes,
+      celulaId: celulaId ? Number(celulaId) : null
+    }
+  });
+
+  res.status(201).json(novo);
+};
+
+export const listarConvertidos = async (_: Request, res: Response) => {
+  const lista = await prisma.novoConvertido.findMany({ include: { celula: true } });
+  res.json(lista);
+};
+
+export const buscarPorId = async (req: Request, res: Response) => {
+  const convertido = await prisma.novoConvertido.findUnique({
+    where: { id: Number(req.params.id) },
+    include: { celula: true }
+  });
+  if (!convertido) return res.status(404).json({ erro: 'Convertido não encontrado.' });
+  res.json(convertido);
+};
+
+export const atualizarConvertido = async (req: Request, res: Response) => {
+  const atualizado = await prisma.novoConvertido.update({
+    where: { id: Number(req.params.id) },
+    data: req.body
+  });
+  res.json(atualizado);
+};
+
+export const deletarConvertido = async (req: Request, res: Response) => {
+  await prisma.novoConvertido.delete({ where: { id: Number(req.params.id) } });
+  res.status(204).send();
+};
+
+/* ========== src/controllers/mensagem.controller.ts ========== */
+import { Request, Response } from 'express';
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
+
+export const criarMensagem = async (req: Request, res: Response) => {
+  const { titulo, textoBase, tipo, publicoAlvo, estrutura, autor, congregacaoId } = req.body;
+  const nova = await prisma.mensagemGerada.create({
+    data: {
+      titulo,
+      textoBase,
+      tipo,
+      publicoAlvo,
+      estrutura,
+      autor,
+      congregacaoId: Number(congregacaoId)
+    }
+  });
+  res.status(201).json(nova);
+};
+
+export const listarMensagens = async (_: Request, res: Response) => {
+  const lista = await prisma.mensagemGerada.findMany({ orderBy: { dataCriacao: 'desc' } });
+  res.json(lista);
+};
+
+export const buscarPorId = async (req: Request, res: Response) => {
+  const mensagem = await prisma.mensagemGerada.findUnique({
+    where: { id: Number(req.params.id) }
+  });
+  if (!mensagem) return res.status(404).json({ erro: 'Mensagem não encontrada.' });
+  res.json(mensagem);
+};
+
+export const atualizarMensagem = async (req: Request, res: Response) => {
+  const atualizada = await prisma.mensagemGerada.update({
+    where: { id: Number(req.params.id) },
+    data: req.body
+  });
+  res.json(atualizada);
+};
+
+export const deletarMensagem = async (req: Request, res: Response) => {
+  await prisma.mensagemGerada.delete({ where: { id: Number(req.params.id) } });
+  res.status(204).send();
+};
+
+/* ========== src/controllers/relatorio.controller.ts ========== */
+import { Request, Response } from 'express';
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
+
+export const relatorioMensal = async (req: Request, res: Response) => {
+  const { mes, ano, congregacaoId } = req.query;
+  const inicio = new Date(`${ano}-${mes}-01`);
+  const fim = new Date(`${ano}-${mes}-31`);
+
+  const dados = await prisma.dizimo.findMany({
+    where: {
+      data: { gte: inicio, lte: fim },
+      congregacaoId: congregacaoId ? Number(congregacaoId) : undefined
+    }
+  });
+
+  const total = dados.reduce((acc, item) => acc + item.valor, 0);
+  const media = dados.length ? total / dados.length : 0;
+
+  res.json({
+    mes, ano,
+    totalDizimos: total.toFixed(2),
+    quantidadeLancamentos: dados.length,
+    valorMedio: media.toFixed(2)
+  });
+};
+
+/* ========== src/controllers/log.controller.ts ========== */
+import { Request, Response } from 'express';
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
+
+export const listarLogs = async (_: Request, res: Response) => {
+  const logs = await prisma.logAcao.findMany({
+    orderBy: { dataHora: 'desc' },
+    include: { usuario: true }
+  });
+  res.json(logs);
+};
+
+/* ========== src/controllers/notificacao.controller.ts ========== */
+import { Request, Response } from 'express';
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
+
+export const agendarNotificacao = async (req: Request, res: Response) => {
+  const { tipo, destinatario, mensagem, dataEnvio, entidade, entidadeId } = req.body;
+  const nova = await prisma.notificacaoAgendada.create({
+    data: {
+      tipo,
+      destinatario,
+      mensagem,
+      dataEnvio: new Date(dataEnvio),
+      entidade,
+      entidadeId: entidadeId ? Number(entidadeId) : null
+    }
+  });
+  res.status(201).json(nova);
+};
+
+export const listarPendentes = async (_: Request, res: Response) => {
+  const agora = new Date();
+  const pendentes = await prisma.notificacaoAgendada.findMany({
+    where: { enviado: false, dataEnvio: { lte: agora } }
+  });
+  res.json(pendentes);
+};
+
+export const marcarComoEnviada = async (req: Request, res: Response) => {
+  await prisma.notificacaoAgendada.update({
+    where: { id: Number

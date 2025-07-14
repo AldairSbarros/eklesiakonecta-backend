@@ -1,0 +1,492 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== GLOBAL SCHEMA ====================
+
+// Usuário global para manutenção/admin
+model DevUser {
+  id        Int    @id @default(autoincrement())
+  nome      String
+  email     String @unique
+  senha     String
+  perfil    String // ex: 'admin', 'suporte'
+  ativo     Boolean @default(true)
+}
+
+// Cadastro das igrejas (Church) e schemas
+model Church {
+  id                Int             @id @default(autoincrement())
+  nome              String
+  email             String
+  password          String
+  logo              String?
+  schema            String           @unique // Nome do schema da Church
+  enderecoId        Int?
+  endereco          EnderecoIgreja? @relation(fields: [enderecoId], references: [id])
+  pastorPrincipalId Int?
+  pastorPrincipal   Pastor?         @relation("PastorPrincipalChurch", fields: [pastorPrincipalId], references: [id])
+  congregacoes      Congregacao[]
+  vendas            Venda[]
+  status            String          @default("ativa") // <-- status: ativa/inativa
+  createdAt         DateTime        @default(now())
+  latitude  Float?  // <-- novo campo
+  longitude Float?  // <-- novo campo
+  liveStreams       LiveStream[]    // Relation to LiveStream
+}
+
+// ==================== SCHEMA POR CHURCH ====================
+
+// Pastor pode ser principal (Church) ou dirigente (Congregação)
+model Pastor {
+  id                Int             @id @default(autoincrement())
+  nome              String
+  email             String
+  telefone          String?
+  churchPrincipal   Church[]         @relation("PastorPrincipalChurch")
+  congregacoes      Congregacao[]    @relation("PastorDirigenteCongregacao")
+}
+
+// Congregação (filial da Church)
+model Congregacao {
+  id                Int             @id @default(autoincrement())
+  nome              String
+  churchId          Int
+  Church            Church          @relation(fields: [churchId], references: [id])
+  endereco          String
+  telefone          String?
+  membros           Member[]
+  usuarios          Usuario[]
+  offerings         Offering[]
+  despesas          Despesa[]
+  receitas          Receita[]
+  investimentos     Investimento[]
+  celulas           Celula[]
+  ministerioLocal   MinisterioLocal[]
+  pastorDirigenteId Int?
+  pastorDirigente   Pastor?         @relation("PastorDirigenteCongregacao", fields: [pastorDirigenteId], references: [id])
+  ministerios       Ministerio[]
+  escolaLideres     EscolaLideresTurma[]
+  encontros         Encontro[]
+  latitude  Float?  // <-- novo campo
+  longitude Float?  // <-- novo campo
+}
+
+// Ministério (Homens, Mulheres, Jovens, Teens, Crianças, etc)
+model Ministerio {
+  id             Int      @id @default(autoincrement())
+  nome           String
+  congregacaoId  Int
+  Congregacao    Congregacao @relation(fields: [congregacaoId], references: [id])
+  liderId        Int?
+  Lider          Member?   @relation("MinisterioLider", fields: [liderId], references: [id])
+  membros        Member[]  @relation("MinisterioMembros")
+}
+
+// Ministério Local (liderança da Congregação)
+model MinisterioLocal {
+  id             Int          @id @default(autoincrement())
+  nome           String
+  congregacaoId  Int
+  Congregacao    Congregacao  @relation(fields: [congregacaoId], references: [id])
+  membros        Member[]     @relation("MinisterioLocalMembros")
+}
+
+// Escola de Líderes
+model EscolaLideresTurma {
+  id             Int      @id @default(autoincrement())
+  nome           String
+  congregacaoId  Int
+  Congregacao    Congregacao @relation(fields: [congregacaoId], references: [id])
+  alunos         Member[]  @relation("TurmaAlunos")
+  etapas         EscolaLideresModulo[]
+}
+
+model EscolaLideresModulo {
+  id             Int      @id @default(autoincrement())
+  nome           String
+  turmaId        Int
+  EscolaLideresTurma EscolaLideresTurma @relation(fields: [turmaId], references: [id])
+  licoes         EscolaLideresLicao[]
+}
+
+model EscolaLideresLicao {
+  id             Int      @id @default(autoincrement())
+  nome           String
+  etapaId        Int
+  EscolaLideresEtapa EscolaLideresModulo @relation(fields: [etapaId], references: [id])
+}
+
+// Encontros/Retiros
+model Encontro {
+  id             Int      @id @default(autoincrement())
+  nome           String
+  data           DateTime
+  congregacaoId  Int
+  Congregacao    Congregacao @relation(fields: [congregacaoId], references: [id])
+  participantes  Member[]    @relation("EncontroParticipantes")
+}
+
+// Membro pertence à Congregação
+model Member {
+  id                 Int              @id @default(autoincrement())
+  nome               String
+  telefone           String?
+  email              String?
+  senha              String?
+  congregacaoId      Int
+  Congregacao        Congregacao      @relation(fields: [congregacaoId], references: [id])
+  offerings          Offering[]
+  presencasCelula    PresencaCelula[]
+  liderDeCelulas     Celula[]         @relation("LiderCelula")
+  anfitriaoDeCelulas Celula[]         @relation("AnfitriaoCelula")
+  endereco           EnderecoMembro?
+  ministerios        Ministerio[]     @relation("MinisterioMembros")
+  ministerioLocal    MinisterioLocal[] @relation("MinisterioLocalMembros")
+  escolaLideresTurma EscolaLideresTurma[] @relation("TurmaAlunos")
+  encontros          Encontro[]       @relation("EncontroParticipantes")
+  lideraMinisterios  Ministerio[]     @relation("MinisterioLider")
+  celulaId           Int?
+  celula             Celula?          @relation(fields: [celulaId], references: [id])
+  dataNascimento     DateTime?
+  whatsapp           String?
+  latitude  Float?  // <-- novo campo
+  longitude Float?  // <-- novo campo
+
+  // Discipulado (auto-relação)
+  discipuladorId     Int?             // ID do discipulador deste membro
+  discipulador       Member?          @relation("Discipulado", fields: [discipuladorId], references: [id])
+  discipulandos      Member[]         @relation("Discipulado")
+
+  // Relações com Encontros
+  encontrosComoDiscipulador Encontros[] @relation("EncontroDiscipulador")
+  encontrosComoDiscipulando  Encontros[] @relation("EncontroDiscipulando")
+}
+
+// Endereço do Membro
+model EnderecoMembro {
+  id        Int     @id @default(autoincrement())
+  rua       String
+  numero    String
+  bairro    String
+  cidade    String
+  estado    String
+  cep       String
+  memberId  Int     @unique
+  member    Member  @relation(fields: [memberId], references: [id])
+  latitude  Float?  // <-- novo campo
+  longitude Float?  // <-- novo campo
+}
+
+// Usuário pertence à Congregação
+
+enum PerfilUsuario {
+  ADMIN
+  Dirigente
+  Tesoureiro
+  Secretario
+  Pastor
+}
+model Usuario {
+  id              Int          @id @default(autoincrement())
+  nome            String
+  email           String       @unique
+  senha           String
+  perfil          PerfilUsuario 
+  congregacaoId   Int?
+  Congregacao     Congregacao? @relation(fields: [congregacaoId], references: [id])
+  offering        Offering[]
+  ativo           Boolean      @default(true)
+  tokenTemporario String?
+  usuarioPermissoes UsuarioPermissao[]
+  notificacoes    Notificacao[]
+  tokenRecuperacaoSenhas TokenRecuperacaoSenha[]
+  arquivos        Arquivo[]
+  createdAt       DateTime @default(now())
+  logsAcesso      LogAcesso[]
+  whatsapp        String? // Novo campo para o número do WhatsApp
+}
+
+// Finanças e registros
+model Offering {
+  id            Int         @id @default(autoincrement())
+  type          String
+  value         Float
+  date          DateTime
+  service       String?
+  receiptPhoto  String?
+  numeroRecibo  String?
+  congregacaoId Int
+  memberId      Int
+  usuarioId     Int?
+  Congregacao   Congregacao @relation(fields: [congregacaoId], references: [id])
+  Member        Member      @relation(fields: [memberId], references: [id])
+  Usuario       Usuario?    @relation(fields: [usuarioId], references: [id])
+}
+
+model Despesa {
+  id             Int         @id @default(autoincrement())
+  descricao      String
+  valor          Float
+  data           DateTime
+  categoria      String?
+  observacao     String?
+  notaFiscalFoto String?
+  codigoManual   String?
+  congregacaoId  Int
+  Congregacao    Congregacao @relation(fields: [congregacaoId], references: [id])
+}
+
+model Receita {
+  id            Int         @id @default(autoincrement())
+  descricao     String
+  valor         Float
+  data          DateTime
+  categoria     String?
+  observacao    String?
+  codigoManual  String?
+  congregacaoId Int
+  Congregacao   Congregacao @relation(fields: [congregacaoId], references: [id])
+}
+
+model Investimento {
+  id            Int         @id @default(autoincrement())
+  descricao     String
+  valor         Float
+  data          DateTime
+  categoria     String?
+  codigoManual  String?
+  congregacaoId Int
+  Congregacao   Congregacao @relation(fields: [congregacaoId], references: [id])
+}
+
+// Células e reuniões
+model Celula {
+  id            Int             @id @default(autoincrement())
+  nome          String
+  tipo          String?
+  liderId       Int?
+  anfitriaoId   Int?
+  congregacaoId Int
+  local         String?         // Novo campo: endereço/local da célula
+  diaSemana     String?         // Novo campo: dia da semana
+  horario       String?         // Novo campo: horário da célula
+  Congregacao   Congregacao     @relation(fields: [congregacaoId], references: [id])
+  lider         Member?         @relation("LiderCelula", fields: [liderId], references: [id])
+  anfitriao     Member?         @relation("AnfitriaoCelula", fields: [anfitriaoId], references: [id])
+  membros       Member[]  // Associação de membros à célula
+  reunioes      ReuniaoCelula[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  latitude  Float?  // <-- novo campo
+  longitude Float?  // <-- novo campo
+}
+
+model ReuniaoCelula {
+  id         Int               @id @default(autoincrement())
+  data       DateTime
+  tema       String
+  celulaId   Int
+  Celula     Celula            @relation(fields: [celulaId], references: [id])
+  presencas  PresencaCelula[]
+  visitantes VisitanteCelula[]
+  latitude  Float?  // <-- novo campo
+  longitude Float?  // <-- novo campo
+}
+
+model PresencaCelula {
+  id            Int           @id @default(autoincrement())
+  membroId      Int
+  reuniaoId     Int
+  presente      Boolean       @default(false)
+  Member        Member        @relation(fields: [membroId], references: [id])
+  ReuniaoCelula ReuniaoCelula @relation(fields: [reuniaoId], references: [id])
+
+  @@unique([reuniaoId, membroId], name: "presenca_unica")
+}
+
+model VisitanteCelula {
+  id            Int           @id @default(autoincrement())
+  nome          String
+  reuniaoId     Int
+  ReuniaoCelula ReuniaoCelula @relation(fields: [reuniaoId], references: [id])
+}
+
+model MensagemCelula {
+  id       Int      @id @default(autoincrement())
+  titulo   String
+  conteudo String
+  data     DateTime @default(now())
+}
+
+model Permissao {
+  id    Int    @id @default(autoincrement())
+  nome  String @unique
+  usuarios UsuarioPermissao[]
+}
+
+model UsuarioPermissao {
+  id          Int      @id @default(autoincrement())
+  usuarioId   Int
+  permissaoId Int
+  Usuario     Usuario  @relation(fields: [usuarioId], references: [id])
+  Permissao   Permissao @relation(fields: [permissaoId], references: [id])
+}
+
+model Notificacao {
+  id         Int      @id @default(autoincrement())
+  usuarioId  Int?
+  titulo     String
+  mensagem   String
+  tipo       String
+  data       DateTime @default(now())
+  Usuario    Usuario? @relation(fields: [usuarioId], references: [id])
+}
+
+model Webhook {
+  id        Int      @id @default(autoincrement())
+  tipo      String
+  payload   Json
+  recebidoEm DateTime @default(now())
+}
+
+model TokenRecuperacaoSenha {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  usuarioId Int
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id])
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Arquivo {
+  id        Int      @id @default(autoincrement())
+  url       String
+  tipo      String
+  criadoEm  DateTime @default(now())
+  usuarioId Int?
+  Usuario   Usuario? @relation(fields: [usuarioId], references: [id])
+}
+
+model Log {
+  id        Int      @id @default(autoincrement())
+  usuarioId Int
+  acao      String
+  data      DateTime @default(now())
+  detalhes  String?
+}
+
+model Sermao {
+  id        Int      @id @default(autoincrement())
+  titulo    String
+  textoBase String
+  conteudo  String
+  data      DateTime @default(now())
+  pastorId  Int
+  igrejaId  Int
+}
+
+model EnderecoIgreja {
+  id      Int      @id @default(autoincrement())
+  rua     String
+  numero  String
+  bairro  String
+  cidade  String
+  estado  String
+  cep     String
+  igrejas Church[]
+  latitude  Float?  // <-- novo campo
+  longitude Float?  // <-- novo campo
+}
+
+model Venda {
+  id            Int      @id @default(autoincrement())
+  churchId      Int
+  Church        Church   @relation(fields: [churchId], references: [id])
+  data          DateTime @default(now())
+  valor         Float
+  status        String   // "pago", "pendente", "cancelado", "expirado"
+  tipoPlano     String   // "mensal", "anual", "trial", "vitalicio"
+  descricao     String?
+  gateway       String?  // "stripe", "mercadopago", "pagseguro", etc
+  externalId    String?  // ID da transação no gateway
+  vencimento    DateTime? // Data de vencimento da fatura
+  renovacaoAuto Boolean   @default(false) // Se é recorrente
+  upgradeDeId   Int?      // Venda anterior (para upgrades)
+  upgradeDe     Venda?    @relation("UpgradeVenda", fields: [upgradeDeId], references: [id])
+  upgrades      Venda[]   @relation("UpgradeVenda")
+  faturas       Fatura[]
+  observacao    String?
+}
+
+model Fatura {
+  id         Int      @id @default(autoincrement())
+  vendaId    Int
+  Venda      Venda    @relation(fields: [vendaId], references: [id])
+  data       DateTime @default(now())
+  valor      Float
+  status     String   // "paga", "pendente", "cancelada"
+  gateway    String?  // "stripe", "mercadopago", etc
+  externalId String?  // ID da fatura no gateway
+  vencimento DateTime?
+  observacao String?
+}
+
+model LogAcesso {
+  id          Int      @id @default(autoincrement())
+  usuarioId   Int?
+  usuario     Usuario? @relation(fields: [usuarioId], references: [id])
+  acao        String
+  detalhes    String?
+  ip          String?
+  criadoEm    DateTime @default(now())
+}
+
+model ConfigEmail {
+  id        Int    @id @default(autoincrement())
+  clienteId Int    @unique
+  smtpHost  String
+  smtpPort  Int
+  smtpUser  String
+  smtpPass  String
+  email     String // E-mail principal do cliente
+}
+
+model Auditoria {
+  id         Int      @id @default(autoincrement())
+  acao       String   // Ex: 'criar_igreja', 'remover_usuario', 'login'
+  usuarioId  Int?     // ID do usuário que fez a ação (pode ser null para ações públicas)
+  superuser  Boolean  @default(false)
+  detalhes   String?  // JSON ou texto com detalhes da ação
+  dataHora   DateTime @default(now())
+}
+
+model Encontros {
+  id             Int      @id @default(autoincrement())
+  discipuladorId Int
+  discipulandoId Int
+  data           DateTime
+  assunto        String?
+  observacoes    String?
+  criadoEm       DateTime @default(now())
+
+  discipulador   Member   @relation("EncontroDiscipulador", fields: [discipuladorId], references: [id])
+  discipulando   Member   @relation("EncontroDiscipulando", fields: [discipulandoId], references: [id])
+}
+
+model LiveStream {
+  id         Int      @id @default(autoincrement())
+  churchId   Int
+  titulo     String
+  descricao  String?
+  url        String   // link do vídeo/livestream
+  agendadaEm DateTime?
+  criadaEm   DateTime @default(now())
+  church     Church   @relation(fields: [churchId], references: [id])
+}

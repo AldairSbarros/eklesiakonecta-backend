@@ -1,0 +1,136 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2025-06-30T23:00:00.000Z",
+  "__export_source": "insomnia.desktop.app:v2024.2.2",
+  "resources": [
+    {
+      "_id": "wrk_eklesia",
+      "name": "Eklesia API",
+      "type": "workspace"
+    },
+    {
+      "_id": "env_eklesia",
+      "parentId": "wrk_eklesia",
+      "name": "Base Environment",
+      "type": "environment",
+      "data": {
+        "base_url": "http://localhost:3001",
+        "schema": "cliente_teste",
+        "jwt_token": ""
+      }
+    },
+    {
+      "_id": "fld_auth",
+      "parentId": "wrk_eklesia",
+      "name": "Autenticação",
+      "type": "request_group"
+    },
+    {
+      "_id": "req_login",
+      "parentId": "fld_auth",
+      "name": "Login",
+      "type": "request",
+      "method": "POST",
+      "url": "{{ base_url }}/api/auth/login",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"aldairbarros@eklesia.app.br\",\n  \"senha\": \"Alsib@2025\"\n}"
+      },
+      "headers": [
+        { "name": "schema", "value": "{{ schema }}" }
+      ]
+    },
+    {
+      "_id": "req_register",
+      "parentId": "fld_auth",
+      "name": "Registrar Usuário",
+      "type": "request",
+      "method": "POST",
+      "url": "{{ base_url }}/api/auth/register",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Usuário Teste\",\n  \"email\": \"teste{{ timestamp }}@teste.com\",\n  \"senha\": \"123456\",\n  \"perfil\": \"ADMIN\"\n}"
+      },
+      "headers": [
+        { "name": "schema", "value": "{{ schema }}" }
+      ]
+    },
+    {
+      "_id": "fld_usuarios",
+      "parentId": "wrk_eklesia",
+      "name": "Usuários",
+      "type": "request_group"
+    },
+    {
+      "_id": "req_listar_usuarios",
+      "parentId": "fld_usuarios",
+      "name": "Listar Usuários",
+      "type": "request",
+      "method": "GET",
+      "url": "{{ base_url }}/api/usuarios",
+      "headers": [
+        { "name": "schema", "value": "{{ schema }}" },
+        { "name": "Authorization", "value": "Bearer {{ jwt_token }}" }
+      ]
+    },
+    {
+      "_id": "req_criar_usuario",
+      "parentId": "fld_usuarios",
+      "name": "Criar Usuário",
+      "type": "request",
+      "method": "POST",
+      "url": "{{ base_url }}/api/usuarios",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Novo Usuário\",\n  \"email\": \"novo{{ timestamp }}@teste.com\",\n  \"senha\": \"Senha@123\",\n  \"perfil\": \"admin\"\n}"
+      },
+      "headers": [
+        { "name": "schema", "value": "{{ schema }}" },
+        { "name": "Authorization", "value": "Bearer {{ jwt_token }}" }
+      ]
+    },
+    {
+      "_id": "fld_igrejas",
+      "parentId": "wrk_eklesia",
+      "name": "Igrejas",
+      "type": "request_group"
+    },
+    {
+      "_id": "req_criar_igreja",
+      "parentId": "fld_igrejas",
+      "name": "Criar Igreja",
+      "type": "request",
+      "method": "POST",
+      "url": "{{ base_url }}/api/igrejas",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Igreja Nova\",\n  \"email\": \"nova{{ timestamp }}@igreja.com\"\n}"
+      },
+      "headers": [
+        { "name": "schema", "value": "{{ schema }}" }
+      ]
+    },
+    {
+      "_id": "fld_faturas",
+      "parentId": "wrk_eklesia",
+      "name": "Faturas",
+      "type": "request_group"
+    },
+    {
+      "_id": "req_criar_fatura",
+      "parentId": "fld_faturas",
+      "name": "Criar Fatura",
+      "type": "request",
+      "method": "POST",
+      "url": "{{ base_url }}/api/faturas",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"valor\": 100,\n  \"status\": \"PENDENTE\"\n}"
+      },
+      "headers": [
+        { "name": "schema", "value": "{{ schema }}" }
+      ]
+    }
+  ]
+}

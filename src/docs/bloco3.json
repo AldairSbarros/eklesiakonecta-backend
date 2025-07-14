@@ -1,0 +1,121 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id      Int     @id @default(autoincrement())
+  nome    String
+  email   String  @unique
+  senha   String
+  perfil  String
+
+  logs    LogAcao[]
+  dizimos Dizimo[]
+}
+
+model Congregacao {
+  id      Int     @id @default(autoincrement())
+  nome    String
+  cidade  String
+
+  celulas   Celula[]
+  dizimos   Dizimo[]
+  mensagens MensagemGerada[]
+}
+
+model Dizimo {
+  id            Int      @id @default(autoincrement())
+  valor         Float
+  data          DateTime @default(now())
+  comprovanteUrl String
+
+  usuarioId     Int
+  congregacaoId Int
+
+  usuario       Usuario     @relation(fields: [usuarioId], references: [id])
+  congregacao   Congregacao @relation(fields: [congregacaoId], references: [id])
+}
+
+model Celula {
+  id           Int       @id @default(autoincrement())
+  nome         String
+  tipo         String
+  lider        String
+  anfitriao    String
+  supervisao   String
+  congregacaoId Int
+
+  congregacao  Congregacao   @relation(fields: [congregacaoId], references: [id])
+  reunioes     Reuniao[]
+  convertidos  NovoConvertido[]
+}
+
+model Reuniao {
+  id         Int      @id @default(autoincrement())
+  data       DateTime
+  tema       String
+  presencas  Int
+  visitantes Int
+  celulaId   Int
+
+  celula     Celula   @relation(fields: [celulaId], references: [id])
+}
+
+model NovoConvertido {
+  id            Int       @id @default(autoincrement())
+  nome          String
+  dataDecisao   DateTime
+  localDecisao  String
+  status        String    @default("em_discipulado")
+  discipulador  String?
+  celular       String?
+  observacoes   String?
+
+  celulaId      Int?
+  celula        Celula?   @relation(fields: [celulaId], references: [id])
+}
+
+model MensagemGerada {
+  id            Int       @id @default(autoincrement())
+  titulo        String
+  textoBase     String
+  tipo          String     // culto ou célula
+  publicoAlvo   String
+  estrutura     String
+  autor         String
+  dataCriacao   DateTime   @default(now())
+  congregacaoId Int
+
+  congregacao   Congregacao @relation(fields: [congregacaoId], references: [id])
+}
+
+model LogAcao {
+  id         Int      @id @default(autoincrement())
+  usuarioId  Int
+  acao       String
+  entidade   String
+  entidadeId Int?
+  dataHora   DateTime @default(now())
+
+  usuario    Usuario @relation(fields: [usuarioId], references: [id])
+}
+
+model NotificacaoAgendada {
+  id           Int      @id @default(autoincrement())
+  tipo         String   // whatsapp, email, sms
+  destinatario String
+  mensagem     String
+  dataEnvio    DateTime
+  enviado      Boolean  @default(false)
+  entidade     String?
+  entidadeId   Int?
+}
+
+
+npx prisma generate
+npx prisma migrate dev --name ekklesia-models

@@ -1,0 +1,302 @@
+{
+  "resources": [
+    {
+      "_id": "wrk_1",
+      "name": "API Tesouraria Congregações",
+      "type": "workspace"
+    },
+    {
+      "_id": "env_1",
+      "parentId": "wrk_1",
+      "name": "Base Environment",
+      "type": "environment",
+      "data": {
+        "base_url": "http://localhost:3000",
+        "jwt_token": ""
+      }
+    },
+    {
+      "_id": "fld_auth",
+      "parentId": "wrk_1",
+      "name": "Autenticação",
+      "type": "request_group"
+    },
+    {
+      "_id": "req_register",
+      "parentId": "fld_auth",
+      "name": "Registrar Usuário",
+      "type": "request",
+      "method": "POST",
+      "url": "{{ base_url }}/auth/register",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Admin\",\n  \"email\": \"admin@teste.com\",\n  \"senha\": \"123456\",\n  \"perfil\": \"admin\"\n}"
+      }
+    },
+    {
+      "_id": "req_login",
+      "parentId": "fld_auth",
+      "name": "Login",
+      "type": "request",
+      "method": "POST",
+      "url": "{{ base_url }}/auth/login",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"admin@teste.com\",\n  \"senha\": \"123456\"\n}"
+      }
+    },
+    {
+      "_id": "fld_usuarios",
+      "parentId": "wrk_1",
+      "name": "Usuários",
+      "type": "request_group"
+    },
+    {
+      "_id": "req_listar_usuarios",
+      "parentId": "fld_usuarios",
+      "name": "Listar Usuários",
+      "type": "request",
+      "method": "GET",
+      "url": "{{ base_url }}/usuarios",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ jwt_token }}" }
+      ]
+    },
+    {
+      "_id": "req_criar_usuario",
+      "parentId": "fld_usuarios",
+      "name": "Criar Usuário",
+      "type": "request",
+      "method": "POST",
+      "url": "{{ base_url }}/usuarios",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ jwt_token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"João\",\n  \"email\": \"joao@teste.com\",\n  \"senha\": \"123456\",\n  \"perfil\": \"tesoureiro\",\n  \"congregacaoId\": 1\n}"
+      }
+    },
+    {
+      "_id": "req_trocar_senha",
+      "parentId": "fld_usuarios",
+      "name": "Trocar Senha (usuário)",
+      "type": "request",
+      "method": "PATCH",
+      "url": "{{ base_url }}/usuarios/change-password",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ jwt_token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"senhaAtual\": \"123456\",\n  \"novaSenha\": \"novaSenha123\"\n}"
+      }
+    },
+    {
+      "_id": "fld_congregacoes",
+      "parentId": "wrk_1",
+      "name": "Congregações",
+      "type": "request_group"
+    },
+    {
+      "_id": "req_listar_congregacoes",
+      "parentId": "fld_congregacoes",
+      "name": "Listar Congregações",
+      "type": "request",
+      "method": "GET",
+      "url": "{{ base_url }}/congregacoes",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ jwt_token }}" }
+      ]
+    },
+    {
+      "_id": "req_criar_congregacao",
+      "parentId": "fld_congregacoes",
+      "name": "Criar Congregação",
+      "type": "request",
+      "method": "POST",
+      "url": "{{ base_url }}/congregacoes",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ jwt_token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Congregação Central\"\n}"
+      }
+    },
+    {
+      "_id": "fld_membros",
+      "parentId": "wrk_1",
+      "name": "Membros",
+      "type": "request_group"
+    },
+    {
+      "_id": "req_listar_membros",
+      "parentId": "fld_membros",
+      "name": "Listar Membros",
+      "type": "request",
+      "method": "GET",
+      "url": "{{ base_url }}/membros?congregacaoId=1",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ jwt_token }}" }
+      ]
+    },
+    {
+      "_id": "req_criar_membro",
+      "parentId": "fld_membros",
+      "name": "Criar Membro",
+      "type": "request",
+      "method": "POST",
+      "url": "{{ base_url }}/membros",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ jwt_token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Maria\",\n  \"congregacaoId\": 1\n}"
+      }
+    },
+    {
+      "_id": "fld_ofertas",
+      "parentId": "wrk_1",
+      "name": "Ofertas",
+      "type": "request_group"
+    },
+    {
+      "_id": "req_listar_ofertas",
+      "parentId": "fld_ofertas",
+      "name": "Listar Ofertas",
+      "type": "request",
+      "method": "GET",
+      "url": "{{ base_url }}/ofertas?congregacaoId=1",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ jwt_token }}" }
+      ]
+    },
+    {
+      "_id": "req_criar_oferta",
+      "parentId": "fld_ofertas",
+      "name": "Criar Oferta",
+      "type": "request",
+      "method": "POST",
+      "url": "{{ base_url }}/ofertas",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ jwt_token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"memberId\": 1,\n  \"congregacaoId\": 1,\n  \"type\": \"dizimo\",\n  \"value\": 100,\n  \"date\": \"2025-06-17\",\n  \"service\": \"domingo\"\n}"
+      }
+    },
+    {
+      "_id": "req_upload_receipt",
+      "parentId": "fld_ofertas",
+      "name": "Upload Comprovante",
+      "type": "request",
+      "method": "POST",
+      "url": "{{ base_url }}/ofertas/upload-receipt",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ jwt_token }}" }
+      ],
+      "body": {
+        "mimeType": "multipart/form-data",
+        "params": [
+          { "name": "congregacaoId", "value": "1" },
+          { "name": "ano", "value": "2025" },
+          { "name": "mes", "value": "6" },
+          { "name": "receiptPhoto", "type": "file", "fileName": "" }
+        ]
+      }
+    },
+    {
+      "_id": "req_listar_comprovantes",
+      "parentId": "fld_ofertas",
+      "name": "Listar Comprovantes",
+      "type": "request",
+      "method": "GET",
+      "url": "{{ base_url }}/ofertas/receipts?congregacaoId=1&mes=6&ano=2025",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ jwt_token }}" }
+      ]
+    },
+    {
+      "_id": "fld_despesas",
+      "parentId": "wrk_1",
+      "name": "Despesas",
+      "type": "request_group"
+    },
+    {
+      "_id": "req_listar_despesas",
+      "parentId": "fld_despesas",
+      "name": "Listar Despesas",
+      "type": "request",
+      "method": "GET",
+      "url": "{{ base_url }}/despesas?congregacaoId=1&mes=6&ano=2025",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ jwt_token }}" }
+      ]
+    },
+    {
+      "_id": "req_criar_despesa",
+      "parentId": "fld_despesas",
+      "name": "Criar Despesa",
+      "type": "request",
+      "method": "POST",
+      "url": "{{ base_url }}/despesas",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ jwt_token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"congregacaoId\": 1,\n  \"descricao\": \"Energia elétrica\",\n  \"valor\": 150,\n  \"data\": \"2025-06-10\",\n  \"categoria\": \"Luz\"\n}"
+      }
+    },
+    {
+      "_id": "fld_relatorios",
+      "parentId": "wrk_1",
+      "name": "Relatórios",
+      "type": "request_group"
+    },
+    {
+      "_id": "req_relatorio_mensal",
+      "parentId": "fld_relatorios",
+      "name": "Relatório Mensal (JSON)",
+      "type": "request",
+      "method": "GET",
+      "url": "{{ base_url }}/relatorios/mensal?congregacaoId=1&mes=6&ano=2025",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ jwt_token }}" }
+      ]
+    },
+    {
+      "_id": "req_relatorio_mensal_pdf",
+      "parentId": "fld_relatorios",
+      "name": "Relatório Mensal (PDF)",
+      "type": "request",
+      "method": "GET",
+      "url": "{{ base_url }}/relatorios/mensal/pdf?congregacaoId=1&mes=6&ano=2025",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ jwt_token }}" }
+      ]
+    },
+    {
+      "_id": "fld_dashboard",
+      "parentId": "wrk_1",
+      "name": "Dashboard",
+      "type": "request_group"
+    },
+    {
+      "_id": "req_dashboard_resumo",
+      "parentId": "fld_dashboard",
+      "name": "Resumo Financeiro Anual",
+      "type": "request",
+      "method": "GET",
+      "url": "{{ base_url }}/dashboard/resumo?congregacaoId=1&ano=2025",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ jwt_token }}" }
+      ]
+    }
+  ],
+  "_type": "export",
+  "__export_format": 4
+}

@@ -1,0 +1,169 @@
+/* =====================================================
+ EKKLESIA BACKEND — ESTRUTURA BASE EM TYPESCRIPT
+ CÓDIGO COMPLETO PARA COLAGEM EM VS CODE
+ ===================================================== */
+
+/* ========== tsconfig.json ========== */
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "outDir": "dist",
+    "rootDir": "src",
+    "strict": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "forceConsistentCasingInFileNames": true
+  }
+}
+
+/* ========== .env.example ========== */
+PORT=3333
+DATABASE_URL="postgresql://usuario:senha@localhost:5432/ekklesia"
+JWT_SECRET="ekklesia_secret_key_2025"
+
+/* ========== package.json ========== */
+{
+  "name": "ekklesia-backend",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "ts-node-dev --respawn src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.0.0",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.0",
+    "multer": "^1.4.5",
+    "venom-bot": "^5.0.0"
+  },
+  "devDependencies": {
+    "prisma": "^5.0.0",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.2.2"
+  }
+}
+
+/* ========== tsconfig/estrutura de pastas ========== */
+// Crie essa estrutura:
+
+/ekklesia-backend
+├── src/
+│   ├── controllers/
+│   ├── routes/
+│   ├── middlewares/
+│   ├── utils/
+│   ├── jobs/
+│   └── index.ts
+├── prisma/
+│   └── schema.prisma
+├── uploads/
+├── recibos/
+├── .env
+├── tsconfig.json
+├── package.json
+
+/* ========== prisma/schema.prisma ========== */
+// Aqui você incluirá todos os models: Usuario, Dizimo, Congregacao, Celula, etc.
+// (Se quiser, te entrego tudo pronto aqui depois)
+
+/* ========== src/index.ts ========== */
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import path from 'path';
+
+import usuarioRoutes from './routes/usuario.routes';
+import congregacaoRoutes from './routes/congregacao.routes';
+import dizimoRoutes from './routes/dizimo.routes';
+import celulaRoutes from './routes/celula.routes';
+import reuniaoRoutes from './routes/reuniao.routes';
+import convertidoRoutes from './routes/convertido.routes';
+import mensagemRoutes from './routes/mensagem.routes';
+import relatorioRoutes from './routes/relatorio.routes';
+import logRoutes from './routes/log.routes';
+import notificacaoRoutes from './routes/notificacao.routes';
+
+dotenv.config();
+const app = express();
+
+app.use(cors());
+app.use(express.json());
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+app.use('/recibos', express.static(path.join(__dirname, '../recibos')));
+
+// Rotas
+app.use('/usuario', usuarioRoutes);
+app.use('/congregacao', congregacaoRoutes);
+app.use('/dizimo', dizimoRoutes);
+app.use('/celula', celulaRoutes);
+app.use('/reuniao', reuniaoRoutes);
+app.use('/convertido', convertidoRoutes);
+app.use('/mensagem', mensagemRoutes);
+app.use('/relatorios', relatorioRoutes);
+app.use('/logs', logRoutes);
+app.use('/notificacoes', notificacaoRoutes);
+
+const PORT = process.env.PORT || 3333;
+app.listen(PORT, () => console.log(`🚀 Servidor rodando na porta ${PORT}`));
+
+/* ========== src/utils/jwt.ts ========== */
+import jwt from 'jsonwebtoken';
+const secret = process.env.JWT_SECRET || 'ekklesia_secret_key';
+export function gerarToken(payload: any): string {
+  return jwt.sign(payload, secret, { expiresIn: '4h' });
+}
+export function verificarToken(token: string): any {
+  return jwt.verify(token, secret);
+}
+
+/* ========== src/middlewares/autorizaJWT.ts ========== */
+import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+const secret = process.env.JWT_SECRET || 'ekklesia_secret_key';
+
+export default function autorizaJWT(req: Request, res: Response, next: NextFunction) {
+  const auth = req.headers.authorization;
+  if (!auth) return res.status(401).json({ erro: 'Token ausente' });
+  const token = auth.split(' ')[1];
+  try {
+    const payload = jwt.verify(token, secret);
+    req.usuario = payload;
+    next();
+  } catch {
+    return res.status(401).json({ erro: 'Token inválido' });
+  }
+}
+
+/* ========== src/jobs/whatsappBot.ts ========== */
+import venom from 'venom-bot';
+import axios from 'axios';
+
+venom
+  .create({
+    session: 'ekklesiaBot',
+    multidevice: true
+  })
+  .then((client) => start(client))
+  .catch((err) => console.error(err));
+
+async function start(client: any) {
+  console.log('📲 Bot do WhatsApp conectado!');
+  setInterval(async () => {
+    try {
+      const { data } = await axios.get('http://localhost:3333/notificacoes/pendentes');
+      for (const not of data) {
+        await client.sendText(not.destinatario, not.mensagem);
+        await axios.put(`http://localhost:3333/notificacoes/${not.id}/enviar`);
+        console.log(`✅ Mensagem enviada para ${not.destinatario}`);
+      }
+    } catch (error: any) {
+      console.error('Erro ao enviar notificações:', error.message);
+    }
+  }, 60000);
+}

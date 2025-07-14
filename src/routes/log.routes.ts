@@ -12,10 +12,72 @@ function asyncHandler(
   };
 }
 
+/**
+ * @swagger
+ * /log:
+ *   post:
+ *     summary: Cria um novo log
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       201:
+ *         description: Log criado com sucesso
+ */
 router.post('/', asyncHandler(logController.create));
+
+/**
+ * @swagger
+ * /log:
+ *   get:
+ *     summary: Lista todos os logs
+ *     responses:
+ *       200:
+ *         description: Lista de logs retornada com sucesso
+ */
 router.get('/', asyncHandler(logController.list));
-// router.get('/:id', asyncHandler(logController.get));
+
+/**
+ * @swagger
+ * /log/{id}:
+ *   put:
+ *     summary: Atualiza um log
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: Log atualizado com sucesso
+ */
 router.put('/:id', asyncHandler(logController.update));
+
+/**
+ * @swagger
+ * /log/{id}:
+ *   delete:
+ *     summary: Remove um log
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       204:
+ *         description: Log removido com sucesso
+ */
 router.delete('/:id', asyncHandler(logController.remove));
 
 export default router;

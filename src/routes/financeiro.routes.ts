@@ -8,17 +8,70 @@ import ExcelJS from 'exceljs';
 const prisma = new PrismaClient();
 const router = Router();
 
+/**
+ * @swagger
+ * /financeiro/resumo:
+ *   get:
+ *     summary: Retorna o resumo financeiro
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Resumo financeiro retornado com sucesso
+ */
 router.get('/resumo', autenticarJWT, autorizarRoles(['admin', 'tesoureiro']), (req, res, next) => {
   resumoFinanceiro(req, res).catch(next);
 });
 
-router.get('/resumo', autenticarJWT, autorizarRoles(['admin', 'tesoureiro']), (req, res, next) => {
-  resumoFinanceiro(req, res).catch(next);
-});
+/**
+ * @swagger
+ * /financeiro/relatorio-mensal:
+ *   get:
+ *     summary: Retorna o relatório financeiro mensal
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Relatório mensal retornado com sucesso
+ */
 router.get('/relatorio-mensal', autenticarJWT, autorizarRoles(['admin', 'tesoureiro']), (req, res, next) => {
   relatorioMensal(req, res, next).catch(next);
 });
 
+/**
+ * @swagger
+ * /financeiro/resumo/excel:
+ *   get:
+ *     summary: Exporta o resumo financeiro em Excel
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: congregacaoId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: mes
+ *         required: false
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: ano
+ *         required: false
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Arquivo Excel gerado com sucesso
+ *         content:
+ *           application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       400:
+ *         description: Falta o parâmetro congregacaoId
+ */
 router.get('/resumo/excel', autenticarJWT, autorizarRoles(['admin', 'tesoureiro']), async (req, res, next) => {
   try {
     const { congregacaoId, mes, ano } = req.query;

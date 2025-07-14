@@ -137,3 +137,8 @@ cron.schedule('0 2 * * *', () => {
 });
 
 export default app;
+
+
+const swaggerSpec = require('./docs/swaggerConfig');
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));

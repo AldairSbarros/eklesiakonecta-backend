@@ -12,7 +12,29 @@ function asyncHandler(
   };
 }
 
-// CRUD de permissões
+/**
+ * @swagger
+ * /permissao:
+ *   post:
+ *     summary: Cria uma nova permissão
+ *     parameters:
+ *       - in: header
+ *         name: schema
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       201:
+ *         description: Permissão criada com sucesso
+ *       400:
+ *         description: Schema não informado no header
+ */
 router.post(
   '/',
   asyncHandler(async (req: Request, res: Response) => {
@@ -24,6 +46,24 @@ router.post(
     res.status(201).json(result);
   })
 );
+
+/**
+ * @swagger
+ * /permissao:
+ *   get:
+ *     summary: Lista todas as permissões
+ *     parameters:
+ *       - in: header
+ *         name: schema
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Lista de permissões retornada com sucesso
+ *       400:
+ *         description: Schema não informado no header
+ */
 router.get(
   '/',
   asyncHandler(async (req: Request, res: Response) => {
@@ -35,6 +75,31 @@ router.get(
     res.json(permissoes);
   })
 );
+
+/**
+ * @swagger
+ * /permissao/{id}:
+ *   get:
+ *     summary: Busca uma permissão por ID
+ *     parameters:
+ *       - in: header
+ *         name: schema
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Permissão encontrada com sucesso
+ *       400:
+ *         description: Schema não informado no header
+ *       404:
+ *         description: Permissão não encontrada
+ */
 router.get(
   '/:id',
   asyncHandler(async (req: Request, res: Response) => {
@@ -50,6 +115,35 @@ router.get(
     res.json(permissao);
   })
 );
+
+/**
+ * @swagger
+ * /permissao/{id}:
+ *   put:
+ *     summary: Atualiza uma permissão
+ *     parameters:
+ *       - in: header
+ *         name: schema
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: Permissão atualizada com sucesso
+ *       400:
+ *         description: Schema não informado no header
+ */
 router.put(
   '/:id',
   asyncHandler(async (req: Request, res: Response) => {
@@ -62,6 +156,29 @@ router.put(
     res.json(permissao);
   })
 );
+
+/**
+ * @swagger
+ * /permissao/{id}:
+ *   delete:
+ *     summary: Remove uma permissão
+ *     parameters:
+ *       - in: header
+ *         name: schema
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Permissão removida com sucesso
+ *       400:
+ *         description: Schema não informado no header
+ */
 router.delete(
   '/:id',
   asyncHandler(async (req: Request, res: Response) => {

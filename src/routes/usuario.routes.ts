@@ -14,10 +14,34 @@ function asyncHandler(
   };
 }
 
-// Login (público)
+/**
+ * @swagger
+ * /usuario/login:
+ *   post:
+ *     summary: Realiza login do usuário
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: Login realizado com sucesso
+ */
 router.post('/login', asyncHandler(usuarioController.login));
 
-// Listar todos os dízimos da congregação (admin, tesoureiro ou dirigente)
+/**
+ * @swagger
+ * /usuario/dizimos:
+ *   get:
+ *     summary: Lista todos os dízimos da congregação
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de dízimos retornada com sucesso
+ */
 router.get(
   '/dizimos',
   autenticarJWT,
@@ -25,7 +49,17 @@ router.get(
   asyncHandler(usuarioController.listDizimosCongregacao)
 );
 
-// Listar usuários (apenas admin)
+/**
+ * @swagger
+ * /usuario:
+ *   get:
+ *     summary: Lista todos os usuários
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de usuários retornada com sucesso
+ */
 router.get(
   '/',
   autenticarJWT,
@@ -33,7 +67,23 @@ router.get(
   asyncHandler(usuarioController.list)
 );
 
-// Criar usuário (apenas admin)
+/**
+ * @swagger
+ * /usuario:
+ *   post:
+ *     summary: Cria um novo usuário
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       201:
+ *         description: Usuário criado com sucesso
+ */
 router.post(
   '/',
   autenticarJWT,
@@ -41,7 +91,29 @@ router.post(
   asyncHandler(usuarioController.create)
 );
 
-// Atualizar usuário (apenas admin)
+/**
+ * @swagger
+ * /usuario/{id}:
+ *   put:
+ *     summary: Atualiza um usuário
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: Usuário atualizado com sucesso
+ */
 router.put(
   '/:id',
   autenticarJWT,
@@ -49,7 +121,23 @@ router.put(
   asyncHandler(usuarioController.update)
 );
 
-// Remover usuário (apenas admin)
+/**
+ * @swagger
+ * /usuario/{id}:
+ *   delete:
+ *     summary: Remove um usuário
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       204:
+ *         description: Usuário removido com sucesso
+ */
 router.delete(
   '/:id',
   autenticarJWT,
@@ -57,7 +145,23 @@ router.delete(
   asyncHandler(usuarioController.deleteUsuario)
 );
 
-// Obter usuário por ID (apenas admin)
+/**
+ * @swagger
+ * /usuario/{id}:
+ *   get:
+ *     summary: Busca um usuário por ID
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Usuário encontrado com sucesso
+ */
 router.get(
   '/:id',
   autenticarJWT,
@@ -65,14 +169,50 @@ router.get(
   asyncHandler(usuarioController.get)
 );
 
-// Trocar a própria senha (autenticado)
+/**
+ * @swagger
+ * /usuario/change-password:
+ *   post:
+ *     summary: Troca a própria senha
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: Senha alterada com sucesso
+ */
 router.post(
   '/change-password',
   autenticarJWT,
   asyncHandler(usuarioController.changePassword)
 );
 
-// Upload de comprovante de dízimo (autenticado)
+/**
+ * @swagger
+ * /usuario/upload-comprovante:
+ *   post:
+ *     summary: Upload de comprovante de dízimo
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               comprovante:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Comprovante enviado com sucesso
+ */
 router.post(
   '/upload-comprovante',
   autenticarJWT,

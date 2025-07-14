@@ -1,4 +1,4 @@
-# Manual da API EklesiaApp – Exemplos de Todos os Endpoints
+# Manual da API Eklesia Konecta – Exemplos de Todos os Endpoints
 
 ---
 
@@ -586,5 +586,4 @@
 4. Para POST/PUT, selecione Body > JSON e cole o exemplo acima.
 5. Para rotas protegidas, adicione o token JWT no header:
    ```
-   Authorization: Bearer SEU_TOKEN_AQUI
-   ```
+   Authorization: Bear<vscode_annotation details='%5B%7B%22title%22%3A%22hardcoded

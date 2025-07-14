@@ -1,17 +1,39 @@
-# Documentação da API - Sistema de Tesouraria de Congregações
+# Documentação da API - Eklesia Konecta
+
+Este documento detalha todos os endpoints, exemplos de uso e integrações do backend Eklesia Konecta.
 
 ## Sumário
+- [Módulos do Sistema](#módulos-do-sistema)
 - [Autenticação](#autenticação)
 - [Usuários](#usuários)
 - [Congregações](#congregações)
 - [Membros](#membros)
+- [Células](#células)
+- [Discipulado](#discipulado)
 - [Ofertas](#ofertas)
 - [Despesas](#despesas)
 - [Relatórios](#relatórios)
 - [Dashboard](#dashboard)
 - [Comprovantes (Fotos do Talão)](#comprovantes-fotos-do-talão)
 - [Perfis e Permissões](#perfis-e-permissões)
+- [Testes Automatizados](#testes-automatizados)
+- [Deploy](#deploy)
 - [Observações Gerais](#observações-gerais)
+
+---
+
+## Módulos do Sistema
+
+- **Igrejas/Congregações**: Cadastro, atualização, remoção, localização.
+- **Usuários/Admin**: Cadastro, autenticação, permissões, logs de acesso.
+- **Células**: Cadastro, reuniões, frequência, relatórios.
+- **Discipulado**: Cadastro de discipuladores/discipulandos, acompanhamento, relatórios.
+- **Financeiro**: Ofertas, despesas, relatórios financeiros, upload de comprovantes.
+- **Dashboard**: Resumo financeiro anual.
+- **Notificações**: Envio de e-mails e WhatsApp.
+- **Logs/Auditoria**: Registro de ações administrativas.
+- **Relatórios**: Relatórios mensais, PDF, exportação.
+- **Lives/Web Rádio**: Cadastro e listagem de transmissões ao vivo (se aplicável).
 
 ---
 
@@ -127,6 +149,14 @@ Authorization: Bearer SEU_TOKEN_AQUI
 
 `POST /congregacoes`
 
+**Body:**
+```json
+{
+  "nome": "Congregação Central",
+  "localizacao": "Rua Principal, 123"
+}
+```
+
 ---
 
 ## Membros
@@ -146,6 +176,43 @@ Authorization: Bearer SEU_TOKEN_AQUI
   "congregacaoId": 1
 }
 ```
+
+---
+
+## Células
+
+### Listar células
+
+`GET /celulas?congregacaoId=1`
+
+### Criar célula
+
+`POST /celulas`
+
+**Body:**
+```json
+{
+  "nome": "Célula Central",
+  "congregacaoId": 1,
+  "liderId": 2
+}
+```
+
+### Relatórios de células
+
+`GET /relatorios/celulas?dataInicio=2024-01-01&dataFim=2024-06-30`
+
+---
+
+## Discipulado
+
+### Listar discipulados
+
+`GET /discipulado?congregacaoId=1`
+
+### Relatório de discipulado
+
+`GET /relatorios/discipulado/por-discipulador?dataInicio=2024-01-01&dataFim=2024-06-30`
 
 ---
 
@@ -223,8 +290,7 @@ Authorization: Bearer SEU_TOKEN_AQUI
     "date": "2025-06-17T00:00:00.000Z",
     "service": "domingo",
     "receiptPhoto": "/uploads/1/2025-6/arquivo.jpg"
-  },
-  ...
+  }
 ]
 ```
 
@@ -263,6 +329,18 @@ Authorization: Bearer SEU_TOKEN_AQUI
 
 `GET /relatorios/mensal/pdf?congregacaoId=1&mes=6&ano=2025`
 
+### Relatório de células
+
+`GET /relatorios/celulas?dataInicio=2024-01-01&dataFim=2024-06-30`
+
+### Relatório financeiro
+
+`GET /relatorios/financeiro?dataInicio=2024-01-01&dataFim=2024-06-30`
+
+### Relatório de discipulado
+
+`GET /relatorios/discipulado/por-discipulador?dataInicio=2024-01-01&dataFim=2024-06-30`
+
 ---
 
 ## Dashboard
@@ -293,6 +371,37 @@ Authorization: Bearer SEU_TOKEN_AQUI
 
 ---
 
+## Testes Automatizados
+
+- O backend possui testes unitários e de integração usando Jest e Supertest.
+- Para rodar os testes:
+  ```bash
+  npm run test
+  ```
+- Todos os testes devem passar antes do deploy.
+
+---
+
+## Deploy
+
+1. Faça o clone do projeto do GitHub no servidor.
+2. Configure o arquivo `.env` com as variáveis de produção.
+3. Instale as dependências:
+   ```bash
+   npm install
+   ```
+4. Rode as migrations do banco:
+   ```bash
+   npx prisma migrate deploy
+   ```
+5. Inicie o servidor:
+   ```bash
+   npm start
+   ```
+6. Acesse a documentação da API em `/api-docs`.
+
+---
+
 ## Observações Gerais
 
 - Para upload de arquivos, use `multipart/form-data`.
@@ -300,5 +409,9 @@ Authorization: Bearer SEU_TOKEN_AQUI
 - Para rodar localmente:
   1. Configure `.env` com as variáveis necessárias.
   2. Rode `npx prisma migrate dev` para criar o banco.
-  3. Rode `npm install` e depois `npm run dev` ou `node src/index.js`.
+  3. Rode `npm install` e depois `npm run dev`.
 - Use ferramentas como **Insomnia** ou **Postman** para testar as rotas.
+
+---
+
+> Para detalhes de cada endpoint, consulte as seções acima ou acesse a documentação Swagger em `/api-docs` após rodar o servidor.

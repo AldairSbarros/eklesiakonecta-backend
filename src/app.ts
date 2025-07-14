@@ -38,14 +38,16 @@ import sermaoRoutes from './routes/sermao.routes';
 import passwordRoutes from './routes/password.routes';
 import financeiroRoutes from './routes/financeiro.routes';
 import devUserRoutes from './routes/devuser.routes';
-import relatoriosRoutes from './routes/arquivo.routes';
+// import relatoriosRoutes from './routes/relatorios.routes'; // Corrigido: era arquivo.routes
 import liveRoutes from './routes/live.routes';
 import * as usuarioController from './controllers/usuario.controller';
 import asyncHandler from 'express-async-handler';
 import discipuladoRoutes from './routes/discipulado.routes';
 import './services/aniversariantes.service';
 
-// Inicialização do app
+// Swagger config
+const swaggerSpec = require('./docs/swaggerConfig');
+
 const app = express();
 
 // Middlewares globais
@@ -55,8 +57,7 @@ app.use(cors());
 app.use(express.json());
 
 // Documentação Swagger
-const swaggerDocument = require('./docs/swagger.json');
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Rotas de transmissões ao vivo (lives)
 app.use('/api/lives', liveRoutes);
@@ -103,7 +104,7 @@ app.use('/api/sermoes', sermaoRoutes);
 app.use('/api/enderecos-membro', enderecoMembroRoutes);
 app.use('/api/encontros', encontroRoutes);
 app.use('/api/password', passwordRoutes);
-app.use('/api/relatorios', relatoriosRoutes);
+// app.use('/api/relatorios', relatoriosRoutes);
 app.use('/api/auth', authRoutes); // Inclui /api/auth/login, /api/auth/logout, etc
 
 // Rota alternativa de login de usuário
@@ -137,8 +138,3 @@ cron.schedule('0 2 * * *', () => {
 });
 
 export default app;
-
-
-const swaggerSpec = require('./docs/swaggerConfig');
-
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));

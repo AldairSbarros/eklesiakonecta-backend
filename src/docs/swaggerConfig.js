@@ -9,7 +9,7 @@ const options = {
       description: 'Documentação automática da API EklesiaKonecta'
     }
   },
-  apis: ['./src/routes/*.js', './src/controllers/*.js'], // Ajuste para onde estão seus arquivos de rotas/controllers
+  apis: ['./src/routes/*.ts', './src/controllers/*.ts'], // Ajuste para onde estão seus arquivos de rotas/controllers
 };
 
 const swaggerSpec = swaggerJSDoc(options);

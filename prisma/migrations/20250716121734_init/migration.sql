@@ -1,3 +1,6 @@
+-- CreateEnum
+CREATE TYPE "PerfilUsuario" AS ENUM ('ADMIN', 'Dirigente', 'Tesoureiro', 'Secretario', 'Pastor');
+
 -- CreateTable
 CREATE TABLE "DevUser" (
     "id" SERIAL NOT NULL,
@@ -22,6 +25,8 @@ CREATE TABLE "Church" (
     "pastorPrincipalId" INTEGER,
     "status" TEXT NOT NULL DEFAULT 'ativa',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "latitude" DOUBLE PRECISION,
+    "longitude" DOUBLE PRECISION,
 
     CONSTRAINT "Church_pkey" PRIMARY KEY ("id")
 );
@@ -44,6 +49,8 @@ CREATE TABLE "Congregacao" (
     "endereco" TEXT NOT NULL,
     "telefone" TEXT,
     "pastorDirigenteId" INTEGER,
+    "latitude" DOUBLE PRECISION,
+    "longitude" DOUBLE PRECISION,
 
     CONSTRAINT "Congregacao_pkey" PRIMARY KEY ("id")
 );
@@ -77,12 +84,12 @@ CREATE TABLE "EscolaLideresTurma" (
 );
 
 -- CreateTable
-CREATE TABLE "EscolaLideresEtapa" (
+CREATE TABLE "EscolaLideresModulo" (
     "id" SERIAL NOT NULL,
     "nome" TEXT NOT NULL,
     "turmaId" INTEGER NOT NULL,
 
-    CONSTRAINT "EscolaLideresEtapa_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "EscolaLideresModulo_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -112,6 +119,12 @@ CREATE TABLE "Member" (
     "email" TEXT,
     "senha" TEXT,
     "congregacaoId" INTEGER NOT NULL,
+    "celulaId" INTEGER,
+    "dataNascimento" TIMESTAMP(3),
+    "whatsapp" TEXT,
+    "latitude" DOUBLE PRECISION,
+    "longitude" DOUBLE PRECISION,
+    "discipuladorId" INTEGER,
 
     CONSTRAINT "Member_pkey" PRIMARY KEY ("id")
 );
@@ -126,6 +139,8 @@ CREATE TABLE "EnderecoMembro" (
     "estado" TEXT NOT NULL,
     "cep" TEXT NOT NULL,
     "memberId" INTEGER NOT NULL,
+    "latitude" DOUBLE PRECISION,
+    "longitude" DOUBLE PRECISION,
 
     CONSTRAINT "EnderecoMembro_pkey" PRIMARY KEY ("id")
 );
@@ -136,10 +151,12 @@ CREATE TABLE "Usuario" (
     "nome" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "senha" TEXT NOT NULL,
-    "perfil" TEXT NOT NULL,
+    "perfil" "PerfilUsuario" NOT NULL,
     "congregacaoId" INTEGER,
     "ativo" BOOLEAN NOT NULL DEFAULT true,
     "tokenTemporario" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "whatsapp" TEXT,
 
     CONSTRAINT "Usuario_pkey" PRIMARY KEY ("id")
 );
@@ -210,6 +227,13 @@ CREATE TABLE "Celula" (
     "liderId" INTEGER,
     "anfitriaoId" INTEGER,
     "congregacaoId" INTEGER NOT NULL,
+    "local" TEXT,
+    "diaSemana" TEXT,
+    "horario" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "latitude" DOUBLE PRECISION,
+    "longitude" DOUBLE PRECISION,
 
     CONSTRAINT "Celula_pkey" PRIMARY KEY ("id")
 );
@@ -220,6 +244,8 @@ CREATE TABLE "ReuniaoCelula" (
     "data" TIMESTAMP(3) NOT NULL,
     "tema" TEXT NOT NULL,
     "celulaId" INTEGER NOT NULL,
+    "latitude" DOUBLE PRECISION,
+    "longitude" DOUBLE PRECISION,
 
     CONSTRAINT "ReuniaoCelula_pkey" PRIMARY KEY ("id")
 );
@@ -295,10 +321,11 @@ CREATE TABLE "Webhook" (
 -- CreateTable
 CREATE TABLE "TokenRecuperacaoSenha" (
     "id" SERIAL NOT NULL,
-    "usuarioId" INTEGER NOT NULL,
     "token" TEXT NOT NULL,
-    "criadoEm" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "expirado" BOOLEAN NOT NULL DEFAULT false,
+    "usuarioId" INTEGER NOT NULL,
+    "expiresAt" TIMESTAMP(3) NOT NULL,
+    "used" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "TokenRecuperacaoSenha_pkey" PRIMARY KEY ("id")
 );
@@ -347,6 +374,8 @@ CREATE TABLE "EnderecoIgreja" (
     "cidade" TEXT NOT NULL,
     "estado" TEXT NOT NULL,
     "cep" TEXT NOT NULL,
+    "latitude" DOUBLE PRECISION,
+    "longitude" DOUBLE PRECISION,
 
     CONSTRAINT "EnderecoIgreja_pkey" PRIMARY KEY ("id")
 );
@@ -383,6 +412,69 @@ CREATE TABLE "Fatura" (
     "observacao" TEXT,
 
     CONSTRAINT "Fatura_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "LogAcesso" (
+    "id" SERIAL NOT NULL,
+    "usuarioId" INTEGER,
+    "acao" TEXT NOT NULL,
+    "detalhes" TEXT,
+    "ip" TEXT,
+    "criadoEm" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "LogAcesso_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ConfigEmail" (
+    "id" SERIAL NOT NULL,
+    "clienteId" INTEGER NOT NULL,
+    "smtpHost" TEXT NOT NULL,
+    "smtpPort" INTEGER NOT NULL,
+    "smtpUser" TEXT NOT NULL,
+    "smtpPass" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+
+    CONSTRAINT "ConfigEmail_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Auditoria" (
+    "id" SERIAL NOT NULL,
+    "acao" TEXT NOT NULL,
+    "usuarioId" INTEGER,
+    "superuser" BOOLEAN NOT NULL DEFAULT false,
+    "detalhes" TEXT,
+    "dataHora" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Auditoria_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Encontros" (
+    "id" SERIAL NOT NULL,
+    "discipuladorId" INTEGER NOT NULL,
+    "discipulandoId" INTEGER NOT NULL,
+    "data" TIMESTAMP(3) NOT NULL,
+    "assunto" TEXT,
+    "observacoes" TEXT,
+    "criadoEm" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Encontros_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "LiveStream" (
+    "id" SERIAL NOT NULL,
+    "churchId" INTEGER NOT NULL,
+    "titulo" TEXT NOT NULL,
+    "descricao" TEXT,
+    "url" TEXT NOT NULL,
+    "agendadaEm" TIMESTAMP(3),
+    "criadaEm" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "LiveStream_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -430,10 +522,16 @@ CREATE UNIQUE INDEX "EnderecoMembro_memberId_key" ON "EnderecoMembro"("memberId"
 CREATE UNIQUE INDEX "Usuario_email_key" ON "Usuario"("email");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "PresencaCelula_reuniaoId_membroId_key" ON "PresencaCelula"("reuniaoId", "membroId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Permissao_nome_key" ON "Permissao"("nome");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "TokenRecuperacaoSenha_token_key" ON "TokenRecuperacaoSenha"("token");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ConfigEmail_clienteId_key" ON "ConfigEmail"("clienteId");
 
 -- CreateIndex
 CREATE INDEX "_TurmaAlunos_B_index" ON "_TurmaAlunos"("B");
@@ -472,16 +570,22 @@ ALTER TABLE "MinisterioLocal" ADD CONSTRAINT "MinisterioLocal_congregacaoId_fkey
 ALTER TABLE "EscolaLideresTurma" ADD CONSTRAINT "EscolaLideresTurma_congregacaoId_fkey" FOREIGN KEY ("congregacaoId") REFERENCES "Congregacao"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "EscolaLideresEtapa" ADD CONSTRAINT "EscolaLideresEtapa_turmaId_fkey" FOREIGN KEY ("turmaId") REFERENCES "EscolaLideresTurma"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "EscolaLideresModulo" ADD CONSTRAINT "EscolaLideresModulo_turmaId_fkey" FOREIGN KEY ("turmaId") REFERENCES "EscolaLideresTurma"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "EscolaLideresLicao" ADD CONSTRAINT "EscolaLideresLicao_etapaId_fkey" FOREIGN KEY ("etapaId") REFERENCES "EscolaLideresEtapa"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "EscolaLideresLicao" ADD CONSTRAINT "EscolaLideresLicao_etapaId_fkey" FOREIGN KEY ("etapaId") REFERENCES "EscolaLideresModulo"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Encontro" ADD CONSTRAINT "Encontro_congregacaoId_fkey" FOREIGN KEY ("congregacaoId") REFERENCES "Congregacao"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Member" ADD CONSTRAINT "Member_congregacaoId_fkey" FOREIGN KEY ("congregacaoId") REFERENCES "Congregacao"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Member" ADD CONSTRAINT "Member_celulaId_fkey" FOREIGN KEY ("celulaId") REFERENCES "Celula"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Member" ADD CONSTRAINT "Member_discipuladorId_fkey" FOREIGN KEY ("discipuladorId") REFERENCES "Member"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "EnderecoMembro" ADD CONSTRAINT "EnderecoMembro_memberId_fkey" FOREIGN KEY ("memberId") REFERENCES "Member"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -551,6 +655,18 @@ ALTER TABLE "Venda" ADD CONSTRAINT "Venda_upgradeDeId_fkey" FOREIGN KEY ("upgrad
 
 -- AddForeignKey
 ALTER TABLE "Fatura" ADD CONSTRAINT "Fatura_vendaId_fkey" FOREIGN KEY ("vendaId") REFERENCES "Venda"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "LogAcesso" ADD CONSTRAINT "LogAcesso_usuarioId_fkey" FOREIGN KEY ("usuarioId") REFERENCES "Usuario"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Encontros" ADD CONSTRAINT "Encontros_discipuladorId_fkey" FOREIGN KEY ("discipuladorId") REFERENCES "Member"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Encontros" ADD CONSTRAINT "Encontros_discipulandoId_fkey" FOREIGN KEY ("discipulandoId") REFERENCES "Member"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "LiveStream" ADD CONSTRAINT "LiveStream_churchId_fkey" FOREIGN KEY ("churchId") REFERENCES "Church"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_TurmaAlunos" ADD CONSTRAINT "_TurmaAlunos_A_fkey" FOREIGN KEY ("A") REFERENCES "EscolaLideresTurma"("id") ON DELETE CASCADE ON UPDATE CASCADE;

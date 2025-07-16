@@ -40,6 +40,7 @@ import financeiroRoutes from './routes/financeiro.routes';
 import devUserRoutes from './routes/devuser.routes';
 // import relatoriosRoutes from './routes/relatorios.routes'; // Corrigido: era arquivo.routes
 import liveRoutes from './routes/live.routes';
+import cadastroInicialRoutes from './routes/cadastroInicial.routes';
 import * as usuarioController from './controllers/usuario.controller';
 import asyncHandler from 'express-async-handler';
 import discipuladoRoutes from './routes/discipulado.routes';
@@ -54,10 +55,16 @@ const app = express();
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
 app.use(helmet());
 app.use(cors());
+
+// Adiciona CORS apenas para o frontend local
+app.use(cors({ origin: 'http://localhost:5173' }));
 app.use(express.json());
 
 // Documentação Swagger
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+// Rota de cadastro inicial (sem autenticação)
+app.use('/api', cadastroInicialRoutes);
 
 // Rotas de transmissões ao vivo (lives)
 app.use('/api/lives', liveRoutes);
@@ -118,7 +125,7 @@ app.use('/uploads', express.static('uploads'));
 
 // Rota base de status
 app.get('/', (req: Request, res: Response) => {
-  res.send('API EklesiaApp rodando');
+  res.send('API Eklesia Konecta rodando');
 });
 
 // Cron para backup agendado

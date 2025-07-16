@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { register, login } from '../controllers/auth.controller';
+import { verificarToken } from '../controllers/login.controller';
 
 const router = Router();
 
@@ -52,5 +53,23 @@ router.post('/register', (req, res, next) => {
 router.post('/login', (req, res, next) => {
   Promise.resolve(login(req, res)).catch(next);
 });
+
+/**
+ * @swagger
+ * /auth/verify:
+ *   get:
+ *     summary: Verifica se o token JWT é válido
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Token válido
+ *       401:
+ *         description: Token inválido ou expirado
+ */
+ router.get('/verify', (req, res, next) => {
+  Promise.resolve(verificarToken(req, res)).catch(next);
+});
+
 
 export default router;

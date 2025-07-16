@@ -1,8 +1,9 @@
 {
   "configurado": true,
-  "dataConfiguracao": "2025-07-15T02:25:39.079Z",
+  "dataConfiguracao": "2025-07-16T20:11:22.459Z",
   "primeiraIgreja": {
-    "nome": "Igreja Batista",
-    "schema": "igreja_1752546338908"
+    "nome": "Area 5 IEADAM",
+    "schema": "igreja_area_5_ieadam_1752696679936",
+    "email": "apolo@ieadam.com.br"
   }
 }

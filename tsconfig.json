@@ -1,11 +1,10 @@
 {
   "compilerOptions": {
-    "module": "CommonJS",          // 👈 ESSENCIAL
+    "module": "CommonJS",
     "target": "ES2020",
-    "typeRoots": ["./node_modules/@types", "./src/@types",],
-
+    "typeRoots": ["./node_modules/@types", "./src/@types"],
     "moduleResolution": "Node",
-    "rootDir": ".",
+    "rootDir": "src",
     "outDir": "dist",
     "esModuleInterop": true,
     "resolveJsonModule": true,

@@ -1,3 +1,6 @@
+
+import { getPrisma } from "../utils/prismaDynamic";
+
 // Função mock para evitar erro de build/deploy
 // Implemente a lógica real conforme sua necessidade!
 

@@ -46,8 +46,8 @@ import asyncHandler from 'express-async-handler';
 import discipuladoRoutes from './routes/discipulado.routes';
 import './services/aniversariantes.service';
 
-// Swagger config
-const swaggerSpec = require('./docs/swaggerConfig');
+import swaggerSpec from './docs/swaggerConfig';
+
 
 const app = express();
 

@@ -2,7 +2,7 @@
   "name": "eklesiakonecta",
   "scripts": {
     "build": "tsc",
-    "start": "ts-node src/server.ts",
+    "start": "node dist/server.js",
     "dev": "ts-node-dev src/server.ts",
     "test": "jest",
     "test:watch": "jest --watch",

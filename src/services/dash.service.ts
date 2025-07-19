@@ -112,7 +112,7 @@ export const getResumoFinanceiroMensal = async (
   const prisma = getPrisma(schema);
   const id = Number(congregacaoId);
   const meses = Array.from({ length: 12 }, (_, i) => i + 1);
-  const dadosMensais = [];
+  const dadosMensais: any[] = [];
 
   for (const mes of meses) {
     const dataInicio = new Date(Number(ano), mes - 1, 1);

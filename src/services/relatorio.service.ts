@@ -1,3 +1,13 @@
+// Função mock para evitar erro de build/deploy
+// Implemente a lógica real conforme sua necessidade!
+
+export async function getRelatorioMensalData(schema: string, congregacaoId: string, mes: string, ano: string) {
+  // Exemplo de retorno mock
+  return {
+    listaDizimistas: [],
+    // ...adicione outros campos conforme esperado pelo controller
+  };
+}
 import { getPrisma } from "../utils/prismaDynamic";
 
 export async function registrarLog(

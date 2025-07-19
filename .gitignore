@@ -3,6 +3,6 @@ node_modules
 .env
 coverage/
 backups/
-/generated/prisma
+
 uploads/comprovantes/.env_render
 .env_render

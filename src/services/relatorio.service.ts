@@ -1,3 +1,6 @@
+
+import { getPrisma } from "../utils/prismaDynamic";
+
 // Função mock para evitar erro de build/deploy
 // Implemente a lógica real conforme sua necessidade!
 
@@ -8,7 +11,6 @@ export async function getRelatorioMensalData(schema: string, congregacaoId: stri
     // ...adicione outros campos conforme esperado pelo controller
   };
 }
-import { getPrisma } from "../utils/prismaDynamic";
 
 export async function registrarLog(
   schema: string,

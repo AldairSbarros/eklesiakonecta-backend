@@ -5,3 +5,4 @@ coverage/
 backups/
 /generated/prisma
 uploads/comprovantes/.env_render
+.env_render

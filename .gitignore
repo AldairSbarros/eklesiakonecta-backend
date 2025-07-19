@@ -4,4 +4,4 @@ node_modules
 coverage/
 backups/
 /generated/prisma
-uploads/comprovantes/
+uploads/comprovantes/.env_render

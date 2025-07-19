@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 import { getPrisma } from "../utils/prismaDynamic";
 import fs from "fs";
 import path from "path";
-const { execSync } = require("child_process");
+const { exec } = require("child_process");
 
 interface CadastroSimples {
   nomeIgreja: string;
@@ -37,7 +37,7 @@ export const cadastroInicial = async (
       .toLowerCase()
       .replace(/[^a-z0-9]/g, "_")
       .substring(0, 20);
-    const schemaName = `igreja_${nomeIgrejaSafe}_${timestamp}`;
+    const schemaName = `${nomeIgrejaSafe}_${timestamp}`;
 
     // 1. Salvar no schema público (controle global)
     const prismaPublic = getPrisma("public");
@@ -49,14 +49,24 @@ export const cadastroInicial = async (
 
     // Executa o db push/migrate para criar as tabelas no novo schema
     try {
-      const dbUrl = `postgresql://aldai:2025@localhost:5432/eklesiakonecta?schema=${schemaName}`;
+      // Corrigido para usar a porta 5433 igual ao .env
+      const dbUrl = `postgresql://aldai:2025@localhost:5433/eklesiakonecta?schema=${schemaName}`;
       const isWindows = process.platform === "win32";
       const cmd = isWindows
         ? `set DATABASE_URL=${dbUrl} && npx prisma db push --schema=prisma/schema.prisma`
-        : `DATABASE_URL="${dbUrl}" npx prisma db push --schema=prisma/schema.prisma`;
-      execSync(cmd, { stdio: "inherit", shell: true });
+        : `DATABASE_URL=\"${dbUrl}\" npx prisma db push --schema=prisma/schema.prisma`;
+      await new Promise((resolve, reject) => {
+        exec(cmd, { shell: true }, (error: any, stdout: any, stderr: any) => {
+          if (error) {
+            console.error("Erro ao criar tabelas do Prisma:", stderr || error);
+            reject(error);
+          } else {
+            console.log("Prisma db push output:", stdout);
+            resolve(stdout);
+          }
+        });
+      });
     } catch (err) {
-      console.error("Erro ao criar tabelas do Prisma:", err);
       return res.status(500).json({ error: "Erro ao criar tabelas do sistema. Tente novamente." });
     }
 

@@ -54,11 +54,21 @@ const app = express();
 // Middlewares globais
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
 app.use(helmet());
-app.use(cors());
-
-// Adiciona CORS apenas para o frontend local
-app.use(cors({ origin: 'http://localhost:5173' }));
+// CORS configurado para aceitar apenas o frontend local e permitir headers customizados
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true
+}));
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, X-Church-Schema, schema');
+  next();
+});
 app.use(express.json());
+
+// Rota de health check para o frontend (após CORS)
+app.get('/test', (req: Request, res: Response) => {
+  res.status(200).json({ ok: true });
+});
 
 // Documentação Swagger
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));

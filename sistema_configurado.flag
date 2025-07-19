@@ -1,9 +1,9 @@
 {
   "configurado": true,
-  "dataConfiguracao": "2025-07-16T20:11:22.459Z",
+  "dataConfiguracao": "2025-07-18T21:54:32.640Z",
   "primeiraIgreja": {
-    "nome": "Area 5 IEADAM",
-    "schema": "igreja_area_5_ieadam_1752696679936",
-    "email": "apolo@ieadam.com.br"
+    "nome": "Igreja Jesus Majestado",
+    "schema": "igreja_jesus_majesta_1752875670091",
+    "email": "rodape@majestade.com.br"
   }
 }

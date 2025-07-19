@@ -146,7 +146,7 @@ CREATE TABLE "EnderecoMembro" (
 );
 
 -- CreateTable
-CREATE TABLE "Usuario" (
+CREATE TABLE "usuario" (
     "id" SERIAL NOT NULL,
     "nome" TEXT NOT NULL,
     "email" TEXT NOT NULL,
@@ -158,7 +158,7 @@ CREATE TABLE "Usuario" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "whatsapp" TEXT,
 
-    CONSTRAINT "Usuario_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "usuario_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -519,7 +519,7 @@ CREATE UNIQUE INDEX "Church_schema_key" ON "Church"("schema");
 CREATE UNIQUE INDEX "EnderecoMembro_memberId_key" ON "EnderecoMembro"("memberId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Usuario_email_key" ON "Usuario"("email");
+CREATE UNIQUE INDEX "usuario_email_key" ON "usuario"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "PresencaCelula_reuniaoId_membroId_key" ON "PresencaCelula"("reuniaoId", "membroId");
@@ -591,7 +591,7 @@ ALTER TABLE "Member" ADD CONSTRAINT "Member_discipuladorId_fkey" FOREIGN KEY ("d
 ALTER TABLE "EnderecoMembro" ADD CONSTRAINT "EnderecoMembro_memberId_fkey" FOREIGN KEY ("memberId") REFERENCES "Member"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Usuario" ADD CONSTRAINT "Usuario_congregacaoId_fkey" FOREIGN KEY ("congregacaoId") REFERENCES "Congregacao"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "usuario" ADD CONSTRAINT "usuario_congregacaoId_fkey" FOREIGN KEY ("congregacaoId") REFERENCES "Congregacao"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Offering" ADD CONSTRAINT "Offering_congregacaoId_fkey" FOREIGN KEY ("congregacaoId") REFERENCES "Congregacao"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -600,7 +600,7 @@ ALTER TABLE "Offering" ADD CONSTRAINT "Offering_congregacaoId_fkey" FOREIGN KEY 
 ALTER TABLE "Offering" ADD CONSTRAINT "Offering_memberId_fkey" FOREIGN KEY ("memberId") REFERENCES "Member"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Offering" ADD CONSTRAINT "Offering_usuarioId_fkey" FOREIGN KEY ("usuarioId") REFERENCES "Usuario"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Offering" ADD CONSTRAINT "Offering_usuarioId_fkey" FOREIGN KEY ("usuarioId") REFERENCES "usuario"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Despesa" ADD CONSTRAINT "Despesa_congregacaoId_fkey" FOREIGN KEY ("congregacaoId") REFERENCES "Congregacao"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -633,19 +633,19 @@ ALTER TABLE "PresencaCelula" ADD CONSTRAINT "PresencaCelula_reuniaoId_fkey" FORE
 ALTER TABLE "VisitanteCelula" ADD CONSTRAINT "VisitanteCelula_reuniaoId_fkey" FOREIGN KEY ("reuniaoId") REFERENCES "ReuniaoCelula"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "UsuarioPermissao" ADD CONSTRAINT "UsuarioPermissao_usuarioId_fkey" FOREIGN KEY ("usuarioId") REFERENCES "Usuario"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "UsuarioPermissao" ADD CONSTRAINT "UsuarioPermissao_usuarioId_fkey" FOREIGN KEY ("usuarioId") REFERENCES "usuario"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "UsuarioPermissao" ADD CONSTRAINT "UsuarioPermissao_permissaoId_fkey" FOREIGN KEY ("permissaoId") REFERENCES "Permissao"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Notificacao" ADD CONSTRAINT "Notificacao_usuarioId_fkey" FOREIGN KEY ("usuarioId") REFERENCES "Usuario"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Notificacao" ADD CONSTRAINT "Notificacao_usuarioId_fkey" FOREIGN KEY ("usuarioId") REFERENCES "usuario"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "TokenRecuperacaoSenha" ADD CONSTRAINT "TokenRecuperacaoSenha_usuarioId_fkey" FOREIGN KEY ("usuarioId") REFERENCES "Usuario"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "TokenRecuperacaoSenha" ADD CONSTRAINT "TokenRecuperacaoSenha_usuarioId_fkey" FOREIGN KEY ("usuarioId") REFERENCES "usuario"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Arquivo" ADD CONSTRAINT "Arquivo_usuarioId_fkey" FOREIGN KEY ("usuarioId") REFERENCES "Usuario"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Arquivo" ADD CONSTRAINT "Arquivo_usuarioId_fkey" FOREIGN KEY ("usuarioId") REFERENCES "usuario"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Venda" ADD CONSTRAINT "Venda_churchId_fkey" FOREIGN KEY ("churchId") REFERENCES "Church"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -657,7 +657,7 @@ ALTER TABLE "Venda" ADD CONSTRAINT "Venda_upgradeDeId_fkey" FOREIGN KEY ("upgrad
 ALTER TABLE "Fatura" ADD CONSTRAINT "Fatura_vendaId_fkey" FOREIGN KEY ("vendaId") REFERENCES "Venda"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "LogAcesso" ADD CONSTRAINT "LogAcesso_usuarioId_fkey" FOREIGN KEY ("usuarioId") REFERENCES "Usuario"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "LogAcesso" ADD CONSTRAINT "LogAcesso_usuarioId_fkey" FOREIGN KEY ("usuarioId") REFERENCES "usuario"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Encontros" ADD CONSTRAINT "Encontros_discipuladorId_fkey" FOREIGN KEY ("discipuladorId") REFERENCES "Member"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -210,6 +210,8 @@ model Usuario {
   createdAt       DateTime @default(now())
   logsAcesso      LogAcesso[]
   whatsapp        String? // Novo campo para o número do WhatsApp
+
+  @@map("usuario")
 }
 
 // Finanças e registros
